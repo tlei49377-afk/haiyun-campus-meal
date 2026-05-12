@@ -1,5 +1,7 @@
 package com.sky.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sky.json.JacksonObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +10,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+// ... existing code ...
 
 @Configuration // 配置类
 @Slf4j
@@ -29,9 +33,13 @@ public class RedisConfiguration {
         // 1. 创建字符串序列化器（给所有 Key 使用）
         StringRedisSerializer stringSerializer = new StringRedisSerializer();
 
-        // 2. 创建 JSON 序列化器（给所有 Value 使用）
+        // 2. 创建 JSON 序列化器（给所有 Value 使用），使用自定义的 ObjectMapper 支持 Java 8 日期时间类型
         Jackson2JsonRedisSerializer<Object> jsonSerializer =
                 new Jackson2JsonRedisSerializer<>(Object.class);
+
+        // 创建自定义的 ObjectMapper，支持 LocalDateTime 等 Java 8 日期时间类型
+        ObjectMapper objectMapper = new JacksonObjectMapper();
+        jsonSerializer.setObjectMapper(objectMapper);
 
         // --- 四个序列化全部设置 ---
         template.setKeySerializer(stringSerializer);          // 外层 key
@@ -45,3 +53,4 @@ public class RedisConfiguration {
         return template;
     }
 }
+
