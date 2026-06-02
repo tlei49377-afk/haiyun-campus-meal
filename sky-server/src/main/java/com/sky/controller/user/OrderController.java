@@ -7,6 +7,7 @@ import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.vo.OrderVO;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,5 +63,39 @@ public class OrderController {
         log.info("查询历史订单：page = {}, pageSize = {}, status = {}", page, pageSize, status);
         PageResult pageResult = orderService.pageQueryUser(page, pageSize, status);
         return Result.success(pageResult);
+    }
+
+    /**
+     * 订单详情
+     * @param id
+     * @return
+     */
+    @GetMapping("/orderDetail/{id}")
+    public Result<OrderVO> orderDetail(@PathVariable Long id){
+        log.info("查询订单详情：{}", id);
+        OrderVO orderVO = orderService.orderDetail(id);
+        return Result.success(orderVO);
+    }
+
+    /**
+     * 用户取消订单
+     * @param id
+     * @return
+     */
+    @PutMapping("/cancel/{id}")
+    public Result cancel(@PathVariable("id") Long id) throws Exception {
+        orderService.userCancelById(id);
+        return Result.success();
+    }
+
+    /**
+     * 用户再来一单
+     * @param id
+     * @return
+     */
+    @PostMapping("/repetition/{id}")
+    public Result repetition(@PathVariable("id") Long id) {
+        orderService.repetition(id);
+        return Result.success();
     }
 }
