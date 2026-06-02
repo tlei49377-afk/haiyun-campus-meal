@@ -1,0 +1,48 @@
+package com.sky.mapper;
+
+import com.github.pagehelper.Page;
+import com.sky.entity.Orders;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
+
+import java.time.LocalDateTime;
+
+@Mapper
+public interface OrderMapper {
+    /**
+     * 插入订单数据
+     * @param orders
+     */
+    void insert(Orders orders);
+
+    /**
+     * 根据订单号查询订单
+     * @param orderNumber
+     */
+    @Select("select * from orders where number = #{orderNumber}")
+    Orders getByNumber(String orderNumber);
+
+    /**
+     * 修改订单信息
+     * @param orders
+     */
+    void update(Orders orders);
+
+    /**
+     * 用于替代微信支付更新数据库状态的问题
+     * @param orderStatus 订单状态
+     * @param orderPaidStatus 支付状态
+     * @param check_out_time 支付时间
+     * @param orderNumber 订单号
+     */
+    @Update("update orders set status = #{orderStatus}, pay_status = #{orderPaidStatus}, checkout_time = #{check_out_time} where number = #{orderNumber}")
+    void updateStatus(Integer orderStatus, Integer orderPaidStatus, LocalDateTime check_out_time, String orderNumber);
+
+    /**
+     * 分页条件查询并按下单时间排序
+     * @param status
+     * @return
+     */
+    Page<Orders> pageQuery(Integer status);
+}
