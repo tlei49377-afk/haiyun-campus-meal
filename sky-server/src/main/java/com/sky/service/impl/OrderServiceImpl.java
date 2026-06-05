@@ -9,6 +9,7 @@ import com.sky.entity.*;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.*;
 import com.sky.result.PageResult;
+import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
@@ -22,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.github.pagehelper.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -422,6 +425,81 @@ public class OrderServiceImpl implements OrderService {
                 .status(Orders.CANCELLED)
                 .rejectionReason(ordersRejectionDTO.getRejectionReason())
                 .cancelTime(LocalDateTime.now())
+                .build();
+
+        orderMapper.update(orders);
+    }
+
+    /**
+     * 取消订单
+     * @param ordersCancellationDTO
+     */
+    public void cancel(OrdersCancelDTO ordersCancellationDTO) {
+        // 根据id查询订单
+        Orders ordersDB = orderMapper.getById(ordersCancellationDTO.getId());
+
+        Integer payStatus = ordersDB.getStatus();
+        if (payStatus == Orders.PAID) {
+            // 已支付，需要退款
+            // 微信支付接口：refund
+            // 微信退款接口：pay/refund
+//            String refund = weChatPayUtil.refund(
+//                    ordersDB.getNumber(),
+//                    ordersDB.getNumber(),
+//                    new BigDecimal(0.01),
+//                    new BigDecimal(0.01));
+            log.info("申请退款");
+        }
+
+        // 根据id更新订单状态、取消原因、取消时间
+        Orders orders = Orders.builder()
+                .id(ordersCancellationDTO.getId())
+                .status(Orders.CANCELLED)
+                .cancelReason(ordersCancellationDTO.getCancelReason())
+                .cancelTime(LocalDateTime.now())
+                .build();
+
+        orderMapper.update(orders);
+    }
+
+    /**
+     * 派送订单
+     * @param id
+     */
+    public void delivery(Long id) {
+        // 根据id查询订单
+        Orders orderDB = orderMapper.getById(id);
+
+        // 判断订单状态，是否存在并处于3待派送状态
+        if (orderDB == null || !orderDB.getStatus().equals(Orders.CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        Orders orders = Orders.builder()
+                .id(orderDB.getId())
+                .status(Orders.DELIVERY_IN_PROGRESS)
+                .build();
+
+        orderMapper.update(orders);
+    }
+
+    /**
+     * 完成订单
+     * @param id
+     */
+    public void complete(Long id) {
+        // 根据id查询订单
+        Orders orderDB = orderMapper.getById(id);
+
+        // 订单只有存在且状态为4（派送中）时才可完成
+        if (orderDB == null || !orderDB.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        Orders orders = Orders.builder()
+                .id(orderDB.getId())
+                .status(Orders.COMPLETED)
+                .deliveryTime(LocalDateTime.now())
                 .build();
 
         orderMapper.update(orders);
