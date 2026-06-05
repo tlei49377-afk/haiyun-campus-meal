@@ -14,6 +14,7 @@ import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import org.springframework.beans.BeanUtils;
@@ -191,7 +192,7 @@ public class OrderServiceImpl implements OrderService {
         ordersPageQueryDTO.setPage(page);
 
         // 分页条件查询
-        Page<Orders> pageOrders = orderMapper.pageQuery(status);
+        Page<Orders> pageOrders = orderMapper.pageQuery(ordersPageQueryDTO);
 
         List<OrderVO> List = new ArrayList<>();
 
@@ -224,6 +225,7 @@ public class OrderServiceImpl implements OrderService {
         // 根据订单id查询订单明细,对应的菜品和套餐明细
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
 
+        // 将该订单及其详情封装到OrderVO并返回
         OrderVO orderVO = new OrderVO();
         BeanUtils.copyProperties(orders, orderVO);
         orderVO.setOrderDetailList(orderDetailList);
@@ -298,4 +300,79 @@ public class OrderServiceImpl implements OrderService {
         // 插入到购物车
         shoppingCartMapper.insertBatch(shoppingCartList);
     }
+
+    /**
+     * 条件搜索订单
+     * @param ordersPageQueryDTO
+     * @return
+     */
+    public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+
+        Page<Orders> page = orderMapper.pageQuery(ordersPageQueryDTO);
+
+        List<OrderVO> orderVOList = getOrderVOList(page);
+
+        return new PageResult(page.getTotal(), orderVOList);
+    }
+
+    /**
+     * 获取订单VO列表
+     * @param page
+     * @return
+     */
+    private List<OrderVO> getOrderVOList(Page<Orders> page){
+        List<OrderVO> orderVOList = new ArrayList<>();
+        List<Orders> ordersList = page.getResult();
+        for (Orders orders : ordersList) {
+            OrderVO orderVO = new OrderVO();
+            BeanUtils.copyProperties(orders, orderVO);
+
+            // 获取订单菜品信息
+            String orderDishes = getOrderDishesStr(orders);
+
+            // 将订单菜品信息封装到orderVO中
+            orderVO.setOrderDishes(orderDishes);
+            orderVOList.add(orderVO);
+        }
+        return orderVOList;
+    }
+
+    /**
+     * 根据订单id获取订单菜品信息
+     * @param orders
+     * @return
+     */
+    private String getOrderDishesStr(Orders orders) {
+        // 根据订单id查询订单菜品信息(订单中的菜品和数量)
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
+
+        // 聚合，拼接订单菜品信息（菜品名称 * 数量)
+        List<String> orderDishList = orderDetailList.stream().map(x -> {
+            String orderDish = x.getName() + "*" + x.getNumber() + ";";
+            return orderDish;
+        }).collect(Collectors.toList());
+
+        // 聚合后的结果： 菜品名称 * 数量，菜品名称 * 数量
+        return String.join(",", orderDishList);
+    }
+
+    /**
+     * 各个状态的订单统计
+     * @return
+     */
+    public OrderStatisticsVO statistics() {
+        // 根据状态，分别查询出待接单、待派送、派送中的订单数量
+        Integer toBeConfirmed = orderMapper.countStatus(Orders.TO_BE_CONFIRMED);
+        Integer confirmed = orderMapper.countStatus(Orders.CONFIRMED);
+        Integer deliveryInProgress = orderMapper.countStatus(Orders.DELIVERY_IN_PROGRESS);
+
+        // 封装成OrderStatisticsVO并返回
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+        orderStatisticsVO.setConfirmed(confirmed);
+        orderStatisticsVO.setDeliveryInProgress(deliveryInProgress);
+        orderStatisticsVO.setToBeConfirmed(toBeConfirmed);
+        return orderStatisticsVO;
+    }
+
 }
