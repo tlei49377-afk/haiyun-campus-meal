@@ -2,6 +2,7 @@
 
 一个面向餐厅的外卖管理平台，包含**管理端后台**与**用户端下单**两套业务，并集成了基于 **LangChain4j + 通义千问** 的 **AI 数据查询助手**（支持自然语言查询菜品、分类、订单）。
 
+这是后端仓库，前端服务在 👉 [sky-take-out-frontend](https://github.com/tlei49377-afk/sky-take-out-frontend).
 ---
 
 ## 目录
