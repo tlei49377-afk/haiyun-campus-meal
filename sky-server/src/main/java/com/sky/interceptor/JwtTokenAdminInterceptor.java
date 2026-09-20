@@ -57,4 +57,15 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
             return false;
         }
     }
+
+    /**
+     * 请求结束后清理 ThreadLocal。
+     * Tomcat 线程是复用的，不清理的话下一个请求可能读到上一个请求的员工 id，
+     * 而 AI 会话现在是按员工 id 隔离的，串了就会读到别人的会话。
+     */
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response,
+                                Object handler, Exception ex) {
+        BaseContext.removeCurrentId();
+    }
 }

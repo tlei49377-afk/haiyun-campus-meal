@@ -1,6 +1,6 @@
 # 智能外卖平台
 
-一个面向餐厅的外卖管理平台，包含**管理端后台**与**用户端下单**两套业务，并集成了基于 **LangChain4j + 通义千问** 的 **AI 数据查询助手**（支持自然语言查询菜品、分类、订单）。
+一个面向餐厅的外卖管理平台，包含**管理端后台**与**用户端下单**两套业务，并集成了基于 **LangChain4j + 通义千问** 的 **AI 助手**——支持用自然语言查询菜品、分类、订单，也支持执行新增、修改、删除菜品和上下架等写操作。
 
 这是后端仓库，前端服务在 👉 [sky-take-out-frontend](https://github.com/tlei49377-afk/sky-take-out-frontend).
 ---
@@ -14,6 +14,14 @@
 - [快速开始](#快速开始)
 - [配置说明](#配置说明)
 - [AI 助手](#ai-助手)
+  - [实现方式](#实现方式)
+  - [工具清单](#工具清单)
+  - [写操作的安全机制](#写操作的安全机制)
+  - [会话管理](#会话管理)
+  - [接口](#接口)
+  - [行为约束](#行为约束)
+  - [能力边界](#能力边界)
+  - [前端入口](#前端入口)
 - [接口文档](#接口文档)
 - [项目来源](#项目来源)
 
@@ -33,7 +41,7 @@
 | 数据统计 | 工作台、营业额统计、用户统计、订单统计、销量排名 Top10 |
 | 报表导出 | 运营数据报表导出 Excel |
 | 店铺管理 | 营业状态设置（营业中 / 打烊中） |
-| **AI 助手** | **自然语言查询菜品、分类、订单** |
+| **AI 助手** | **自然语言查询数据 + 菜品增删改与上下架**，带历史会话管理 |
 
 ### 用户端
 
@@ -59,22 +67,23 @@
 | 技术 | 版本 | 说明 |
 |---|---|---|
 | Spring Boot | 3.5.0 | 基础框架（Jakarta EE） |
-| Java | 17+ | 项目以 `release 17` 编译 |
+| Java | 17 | 继承 `spring-boot-starter-parent` 的 `java.version` |
 | MyBatis | 3.0.3 | 持久层框架 |
 | PageHelper | 1.4.7 | 分页插件 |
-| MySQL | 8.x | 数据库（`mysql-connector-j` 8.0.33） |
+| MySQL | 8.0.33 | 数据库（`mysql-connector-j`） |
 | Druid | 1.2.28 | 数据库连接池（`druid-spring-boot-3-starter`） |
-| Redis | — | 缓存 / 会话记忆 |
+| Redis | — | 业务缓存、AI 会话记忆与会话清单 |
 | Knife4j | 4.5.0 | 接口文档（OpenAPI 3 / springdoc） |
-| LangChain4j | 1.0.1-beta6 | AI 应用框架（Function Calling、流式输出） |
+| LangChain4j | 1.0.1-beta6 | AI 应用框架（Function Calling、流式输出、会话记忆） |
 | Apache POI | 3.16 | Excel 报表导出 |
 | JJWT | 0.9.1 | JWT 令牌 |
 | WebSocket | — | 来单提醒 |
 
 ### 前端
 
-- Vue 2 + Element UI（编译产物）
+- Vue 2 + Element UI（编译产物，无源码）
 - Nginx 托管静态资源并反向代理后端接口
+- AI 助手页为独立页面 `ai-chat.html`，由主应用通过 iframe 嵌入
 
 ---
 
@@ -87,15 +96,18 @@ sky-take-out
 ├── sky-server/          服务模块：Controller、Service、Mapper、Config、Task
 │   └── src/main/java/com/sky/
 │       ├── controller/
-│       │   ├── admin/       管理端接口
+│       │   ├── admin/       管理端接口（含 ChatController）
 │       │   ├── user/        用户端接口
 │       │   └── notify/      支付回调
-│       ├── service/         业务逻辑
+│       ├── service/         业务逻辑（含 ChatSessionService：AI 会话清单）
 │       ├── mapper/          数据访问
+│       ├── repository/      Redis 存储（RedisChatMemoryStore：AI 会话记忆）
 │       ├── config/          Spring 配置
 │       ├── task/            定时任务
 │       ├── websocket/       WebSocket 服务
-│       └── aiservice/       AI 助手（AiService 接口 + Tools 工具）
+│       └── aiservice/       AI 助手
+│           ├── ConsultantService.java   AiService 接口声明
+│           └── tools/                   @Tool 工具：DishTools / CategoryTools / OrderTools
 └── pom.xml              父 POM，统一依赖版本管理
 ```
 
@@ -166,7 +178,7 @@ java -jar sky-server/target/sky-server-1.0-SNAPSHOT.jar
 
 或在 IDEA 中直接运行 `com.sky.SkyApplication`。
 
-启动成功后监听 `8080` 端口，控制台输出 `server started`。
+启动成功后监听 `8080` 端口。
 
 ### 5. 部署前端
 
@@ -206,7 +218,7 @@ server {
 
 启动 Nginx 后访问 `http://localhost` 即可。
 
-> **注意**：Nginx 的 `/api/xxx` 会转发到后端 `/admin/xxx`，因此后端管理端接口路径都带 `/admin` 前缀。
+> **注意**：Nginx 的 `/api/xxx` 会转发到后端 `/admin/xxx`，因此后端管理端接口路径都带 `/admin` 前缀。AI 助手页的 `/api/chat/sessions` 也正是靠这条规则落到 `/admin/chat/sessions`，**新增接口无需改 Nginx 配置**。
 
 ---
 
@@ -229,10 +241,22 @@ server {
 
 | 端口 | 用途 | 配置位置 |
 |---|---|---|
-| 6379 | 业务缓存、AI 会话记忆 | `sky.redis.*` |
-| 6380 | LangChain4j 向量库（当前未启用） | `langchain4j.community.redis.*` |
+| 6379 | 业务缓存、AI 会话记忆与会话清单 | `sky.redis.*`（database 10） |
+| 6380 | LangChain4j 向量库（**当前未启用**） | `langchain4j.community.redis.*` |
 
 > Spring Boot 3 中 Redis 配置前缀为 `spring.data.redis.*`（不再是 `spring.redis.*`）。
+
+#### AI 相关的 Redis key
+
+业务 Redis（6379 / db10）中，AI 助手会用到以下 key：
+
+| Key | 类型 | 说明 | TTL |
+|---|---|---|---|
+| `chat:memory:{memoryId}` | String | 会话的完整消息序列（JSON） | 7 天，每次对话续期 |
+| `chat:sessions:{empId}` | ZSet | 该管理员的会话清单，member 为 memoryId，score 为最后活跃时间戳 | 随会话淘汰 |
+| `chat:session:title:{memoryId}` | String | 会话标题（取自第一条消息前 20 字） | 7 天，随会话续期 |
+
+> 6380 的向量库虽然配置齐全（`contentRetriever` Bean 也已定义），但 `contentRetriever` **没有装配到 `@AiService`**，且负责灌数据的 `store()` Bean 被注释掉了，所以 RAG 检索目前不参与对话。
 
 ---
 
@@ -240,44 +264,81 @@ server {
 
 ### 实现方式
 
-基于 **LangChain4j Function Calling**：大模型识别用户意图后，**主动调用后端工具方法查询真实数据库**，再用自然语言组织答案。不是简单的提示词问答，也不会编造数据。
+基于 **LangChain4j Function Calling**：大模型识别用户意图后，**主动调用后端工具方法操作真实数据库**，再用自然语言组织答案。不是简单的提示词问答，也不会编造数据。
 
 ```
 用户提问
   → 大模型识别意图
-  → 调用 @Tool 方法（查真实数据库）
-  → 模型根据查询结果组织自然语言回答
+  → 调用 @Tool 方法（读 / 写真实数据库）
+  → 模型根据执行结果组织自然语言回答
   → 流式返回前端
 ```
 
-### 查询工具
+### 工具清单
 
-| 工具类 | 方法 | 查询维度 |
+每个 `@Tool` 方法都会作为「函数」暴露给大模型，由模型决定何时调用。工具类以 `@Component` 注册为 Spring Bean，通过 `ConsultantService` 的 `tools` 属性按 **bean 名**装配（`AiServiceWiringMode.EXPLICIT`）。
+
+**查询类**
+
+| 工具类 | 方法 | 维度 |
 |---|---|---|
 | `DishTools` | `queryDish` | 菜品名称、分类名称、售卖状态 |
 | `CategoryTools` | `queryCategory` | 分类类型（菜品分类 / 套餐分类） |
 | `OrderTools` | `queryOrder` | 订单号、手机号、订单状态、下单时间范围 |
 
-### 关键文件
+**写操作类**
 
-| 文件 | 作用 |
-|---|---|
-| `aiservice/ConsultantService.java` | AI 服务接口，`@AiService` 声明式装配 |
-| `aiservice/tools/*.java` | `@Tool` 工具方法，对接现有 Service |
-| `repository/RedisChatMemoryStore.java` | 会话记忆存 Redis，支持多轮对话 |
-| `config/CommonConfig.java` | 对话记忆、向量检索等 Bean |
-| `resources/system.txt` | 系统提示词（角色、规则、行为约束） |
-| `controller/admin/ChatController.java` | 对话接口 `GET /admin/chat` |
+| 工具类 | 方法 | 作用 | 底层 Service |
+|---|---|---|---|
+| `DishTools` | `addDish` | 新增菜品 | `saveWithFlavor` |
+| `DishTools` | `updateDish` | 修改名称 / 分类 / 价格 / 描述 | `updateWithFlavor` |
+| `DishTools` | `deleteDish` | 按名称删除菜品 | `deleteBatch` |
+| `DishTools` | `startOrStopDish` | 起售 / 停售，支持按分类批量 | `startOrStop` |
 
-### 对话接口
+### 写操作的安全机制
+
+让大模型直接操作数据库有风险，项目里做了几层约束：
+
+| 机制 | 说明 | 位置 |
+|---|---|---|
+| **二次确认** | 提示词强制要求：任何写操作前必须先复述「要做什么」并等用户明确同意，**即使用户指令已经很明确也不许跳过**。删除须单独确认并提示不可恢复 | `resources/system.txt` |
+| **删除前置校验** | 依赖 `DishService.deleteBatch` 的既有校验：**起售中的菜品不能删**、**被套餐关联的菜品不能删**。工具捕获异常后把原因转述给用户，并建议先停售 | `DishServiceImpl` |
+| **修改重名消歧** | 修改匹配到多道菜时**不猜**，返回候选列表让模型追问用户确认。删除和上下架允许批量（相对容易发现和补救） | `DishTools.updateDish` |
+| **口味保留** | `updateWithFlavor` 会先删光口味再插入，因此修改前先读回原口味原样带上，否则改个价格就会把口味全丢掉 | `DishTools.updateDish` |
+| **状态变更走专用通道** | 修改工具**不支持**改 `status`。因为 `updateWithFlavor` 直接更新状态不会触发「停售菜品时同步停售关联套餐」的逻辑，会留下「套餐在卖、里面的菜已下架」的脏数据 | `DishTools` / `startOrStopDish` |
+| **会话归属校验** | 读写历史、删除会话前校验该会话确实属于当前登录管理员，避免换个 id 读到别人的会话 | `ChatSessionServiceImpl.requireOwned` |
+
+### 会话管理
+
+AI 助手支持多轮对话和历史会话切换，规则如下：
+
+- **每个管理员最多保留 10 条会话**，按 `empId` 隔离（`chat:sessions:{empId}`）
+- 超过 10 条时，淘汰**最久没有使用**的那条（而非最早创建的），并连带删除它的消息和标题，不留下垃圾 key
+- **标题**取自该会话的第一条用户消息（截前 20 字），后续追问不会覆盖——用 `setIfAbsent` 保证原子性
+- **新建会话只生成 id 不登记**：否则连点 10 次「新建会话」会把 10 条真实会话全挤掉，留下的都是空会话。会话在第一条消息发来时才由 `touch()` 登记
+- **会话记忆存 Redis，TTL 7 天**，每次对话自动续期，所以活跃会话不会过期
+- 读历史时**只返回用户消息和助手回复**。记忆里还存着 `ToolExecutionRequest` / `ToolExecutionResultMessage`（工具调用的中间过程），直接返回会是一堆噪音，已在服务层过滤
+
+### 接口
+
+`ChatController` 提供 5 个接口，均受 `JwtTokenAdminInterceptor` 保护（`/admin/**`），需携带 `token` 请求头：
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/admin/chat` | 流式对话，`text/plain` 返回 |
+| POST | `/admin/chat/session` | 新建会话，返回后端生成的 `memoryId` |
+| GET | `/admin/chat/sessions` | 会话列表，最多 10 条，按最后活跃时间倒序 |
+| GET | `/admin/chat/session/{memoryId}/messages` | 读取某会话的历史消息 |
+| DELETE | `/admin/chat/session/{memoryId}` | 删除会话（连同消息） |
+
+对话接口：
 
 ```http
 GET /admin/chat?memoryId={会话ID}&memory={用户问题}
 Header: token: {JWT令牌}
 ```
 
-- `memoryId`：会话标识，后端据此区分不同会话的上下文
-- 返回：`text/plain` 流式输出
+> `memoryId` 由前端持有并回传。当前员工 id 取自 `BaseContext`，且必须在进入 `Flux` **之前**同步取出——`BaseContext` 是 `ThreadLocal`，而 `Flux` 是在别的线程上异步发射的。
 
 ### 行为约束
 
@@ -287,11 +348,43 @@ Header: token: {JWT令牌}
 - 查不到就如实说明，不臆造结果
 - 信息不足时**主动追问**（如只说"查订单"未给订单号）
 - 超出业务范围（闲聊、写代码）礼貌拒绝
-- **只读不写**，不执行增删改操作
+- 写操作**必须先复述并征得用户同意**，删除须单独确认
+- 写操作失败时转述失败原因并给出下一步建议（例如先停售再删除）
+- 不输出 JSON、代码块，把数据整理成自然语言
+
+### 能力边界
+
+以下几件事 AI 助手**做不到**，提示词中已要求它如实告知用户：
+
+| 限制 | 原因 | 替代做法 |
+|---|---|---|
+| 新增菜品不能设置图片 | 对话中无法上传图片 | 新增后到后台补传图片 |
+| 不能修改口味（辣度、忌口等） | 未开放为工具 | 到菜品管理页调整 |
+| 不能改售卖状态 | 状态变更只走上下架工具（见上文） | 用「上架 / 下架」的说法告诉它 |
+| 新增菜品的**描述字段不会入库** | `DishMapper.xml` 的 `insert` 语句未包含 `description` 列（`update` 语句有）——这是既有问题 | 新增后到后台补填描述 |
+
+### 关键文件
+
+| 文件 | 作用 |
+|---|---|
+| `aiservice/ConsultantService.java` | AI 服务接口，`@AiService` 声明式装配（模型、记忆、工具） |
+| `aiservice/tools/*.java` | `@Tool` 工具方法，对接现有 Service |
+| `resources/system.txt` | 系统提示词（角色、规则、确认机制、能力边界） |
+| `repository/RedisChatMemoryStore.java` | 会话记忆存 Redis（`ChatMemoryStore` 实现） |
+| `service/impl/ChatSessionServiceImpl.java` | 会话清单：登记、列表、淘汰、读历史、删除 |
+| `config/CommonConfig.java` | 对话记忆、向量检索等 Bean |
+| `controller/admin/ChatController.java` | 对话与会话管理接口 |
 
 ### 前端入口
 
-管理端登录后，左侧菜单底部「**AI 助手**」，聊天页通过 iframe 嵌入，支持流式打字效果、多轮对话、新建会话。
+管理端登录后，左侧菜单「**AI 助手**」，聊天页通过 iframe 嵌入 `ai-chat.html`，支持：
+
+- 流式打字效果、多轮对话
+- 右上角 **历史会话图标**：鼠标悬停展开下拉列表，点击任意一条即可切回该会话，历史对话自动加载
+- 每条会话右侧 `×` 可单独删除；面板支持点击固定展开、Esc 收起
+- 「+ 新建会话」按钮：向后端申请新的 `memoryId` 并清空界面
+
+> `ai-chat.html` 是**独立的手写单文件页面**（非编译产物），位于 Nginx 的 `html/sky/` 目录下，可直接编辑。其余前端页面是打包后的 SPA，无源码。
 
 ---
 
@@ -310,5 +403,6 @@ http://localhost:8080/doc.html
 本项目基于黑马程序员《苍穹外卖》教学项目进行开发与重构，主要改动包括：
 
 - 从 Spring Boot 2.7 升级至 **Spring Boot 3.5**（Jakarta EE 迁移、Druid/Knife4j 等依赖适配）
-- 集成 **LangChain4j + 通义千问**，实现 AI 数据查询助手
-- 前端品牌与界面调整
+- 集成 **LangChain4j + 通义千问**：初期只做数据查询，后续扩展为**查询 + 写操作**（菜品增删改、上下架），并配套实现了**写操作二次确认**等安全约束
+- 新增 **AI 会话管理**：会话清单（每管理员最多 10 条）、历史会话切换与删除，会话记忆从内存版迁移到 Redis 并加长 TTL
+- 前端品牌与界面调整，AI 助手页重写为独立的 `ai-chat.html`
