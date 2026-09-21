@@ -11,6 +11,11 @@
 # ============================================================
 
 sky:
+  jwt:
+    # JWT 签名密钥，不少于 32 字节的随机字符串，管理端与用户端分别设置
+    admin-secret-key: pjj-please-change-this-to-a-32byte-random-string
+    user-secret-key: pjj-please-change-this-to-another-32byte-string
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     host: localhost
