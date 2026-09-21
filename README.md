@@ -133,9 +133,23 @@ sky-take-out
 
 默认管理员账号：`admin` / `123456`（取决于数据库中的员工数据）。
 
-### 2. 修改配置
+### 2. 配置后端
 
-编辑 `sky-server/src/main/resources/application-dev.yml`：
+敏感配置**不进入版本库**：仓库里只保留模板
+`sky-server/src/main/resources/application-dev.yml.example`，
+真实的 `application-dev.yml` 已被 `.gitignore` 忽略。
+
+**方式一：本地配置文件（推荐）**
+
+```bash
+# Windows
+copy sky-server\src\main\resources\application-dev.yml.example sky-server\src\main\resources\application-dev.yml
+
+# Linux / macOS
+cp sky-server/src/main/resources/application-dev.yml.example sky-server/src/main/resources/application-dev.yml
+```
+
+然后编辑 `application-dev.yml`，把 `your-xxx` 占位符替换成真实配置：
 
 ```yaml
 sky:
@@ -151,6 +165,32 @@ sky:
     password: 你的Redis密码
     database: 10
 ```
+
+**方式二：环境变量（CI/CD、容器部署）**
+
+Spring Boot 会用环境变量覆盖同名配置项，转换规则是
+**大写 + 点号换成下划线**（`sky.datasource.password` → `SKY_DATASOURCE_PASSWORD`）：
+
+| 配置属性 | 环境变量 |
+|---|---|
+| `sky.datasource.host` | `SKY_DATASOURCE_HOST` |
+| `sky.datasource.password` | `SKY_DATASOURCE_PASSWORD` |
+| `sky.redis.password` | `SKY_REDIS_PASSWORD` |
+| `sky.alioss.access-key-id` | `SKY_ALIOSS_ACCESS_KEY_ID` |
+| `sky.alioss.access-key-secret` | `SKY_ALIOSS_ACCESS_KEY_SECRET` |
+| `sky.wechat.secret` | `SKY_WECHAT_SECRET` |
+| `sky.baidu.ak` | `SKY_BAIDU_AK` |
+
+```bash
+# Windows (PowerShell)
+$env:SKY_DATASOURCE_PASSWORD="你的MySQL密码"
+
+# Linux / macOS
+export SKY_DATASOURCE_PASSWORD=你的MySQL密码
+```
+
+> 在 IDEA 中运行：`Run/Debug Configurations` → `Environment variables` 填写即可。
+> 环境变量优先级高于 `application-dev.yml`，本地调试可两者混用。
 
 ### 3. 配置 AI 密钥
 
