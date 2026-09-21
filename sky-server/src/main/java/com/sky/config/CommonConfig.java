@@ -9,13 +9,11 @@ import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.store.memory.chat.ChatMemoryStore;
-import dev.langchain4j.store.memory.chat.InMemoryChatMemoryStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,9 +23,6 @@ import java.util.List;
 @Configuration
 public class CommonConfig {
     @Autowired
-    private OpenAiChatModel model;
-
-    @Autowired
     private ChatMemoryStore redisChatMemoryStore;
 
     @Autowired
@@ -36,16 +31,9 @@ public class CommonConfig {
     @Autowired
     private RedisEmbeddingStore redisEmbeddingStore;
 
-    // 共享的内存存储：所有会话共用一个 store，靠 memoryId 区分。
-    // 关键：必须共享 store —— 否则每次 get(memoryId) 都新建独立内存，历史无法保留。
-    @Bean
-    public ChatMemoryStore chatMemoryStore() {
-        return new InMemoryChatMemoryStore();
-    }
-
     // 每个 memoryId 对应一段独立的对话历史（滑动窗口，最多保留最近 20 条消息）
     @Bean
-    public ChatMemoryProvider chatMemoryProvider(ChatMemoryStore chatMemoryStore) {
+    public ChatMemoryProvider chatMemoryProvider() {
         return memoryId -> MessageWindowChatMemory.builder()
                 .id(memoryId)
                 .maxMessages(20)
