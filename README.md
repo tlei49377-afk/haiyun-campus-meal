@@ -23,6 +23,7 @@
   - [能力边界](#能力边界)
   - [前端入口](#前端入口)
 - [接口文档](#接口文档)
+- [常见问题](#常见问题)
 - [项目来源](#项目来源)
 
 ---
@@ -91,6 +92,7 @@
 
 ```
 sky-take-out
+├── db/                  数据库脚本：建表语句与基础数据
 ├── sky-common/          通用模块：常量、上下文、枚举、异常、工具类、统一返回结果
 ├── sky-pojo/            实体模块：Entity、DTO、VO
 ├── sky-server/          服务模块：Controller、Service、Mapper、Config、Task
@@ -115,13 +117,14 @@ sky-take-out
 
 ## 环境要求
 
-| 组件 | 版本要求 |
+| 组件 / 依赖 | 版本要求 |
 |---|---|
 | JDK | 17 及以上 |
 | Maven | 3.6+ |
 | MySQL | 8.0+ |
 | Redis | 5.0+ |
 | Nginx | 1.20+（前端部署，可选） |
+| 通义千问 API Key | 启动必需，环境变量 `QW-API-KEY` |
 
 ---
 
@@ -129,9 +132,17 @@ sky-take-out
 
 ### 1. 准备数据库
 
-创建名为 `sky_take_out` 的数据库，导入项目所需的表结构与基础数据（分类、菜品、员工等）。
+表结构与基础数据都在 `db/sky_take_out.sql`，脚本内已包含 `CREATE DATABASE sky_take_out`，不需要先手动建库：
 
-默认管理员账号：`admin` / `123456`（取决于数据库中的员工数据）。
+```bash
+# Linux / macOS
+mysql -uroot -p < db/sky_take_out.sql
+
+# Windows（PowerShell 不支持 < 重定向）
+mysql -uroot -p -e "source db/sky_take_out.sql"
+```
+
+导入后应是 11 张表，其中 10 个分类、25 道菜品、2 个套餐。默认管理员账号：`admin` / `123456`。
 
 ### 2. 配置后端
 
@@ -203,7 +214,7 @@ export SKY_DATASOURCE_PASSWORD=你的MySQL密码
 
 ### 3. 配置 AI 密钥
 
-AI 助手的 API Key 通过**环境变量**注入，不写在配置文件里。启动前需设置：
+AI 助手的 API Key 通过**环境变量**注入，不写在配置文件里。**这一项是启动必需**：LangChain4j 的自动配置在启动阶段就要读取 `${QW-API-KEY}`，缺失会直接导致应用起不来（报错见[常见问题](#常见问题)）。启动前需设置：
 
 ```bash
 # Windows (PowerShell)
@@ -231,7 +242,9 @@ java -jar sky-server/target/sky-server-1.0-SNAPSHOT.jar
 
 ### 5. 部署前端
 
-前端为编译后的静态资源，用 Nginx 托管：
+前端仓库 [sky-take-out-frontend](https://github.com/tlei49377-afk/sky-take-out-frontend) 本身就是一份 Nginx 目录：`nginx.exe` 在根目录，静态资源在 `html/sky/`，`conf/nginx.conf` 已包含下面的配置。
+
+Windows 下在仓库根目录执行 `start nginx`（或双击 `nginx.exe`），访问 `http://localhost` 即可。若自己搭 Nginx，参照下面的配置：
 
 ```nginx
 server {
@@ -275,14 +288,14 @@ server {
 
 ### 对外部服务的依赖
 
-以下服务在 `application-dev.yml` 中配置，**不配置不影响核心业务启动**，但对应功能不可用：
+以下服务不配置不影响核心业务启动，但对应功能不可用：
 
 | 配置项 | 用途 | 是否必需 |
 |---|---|---|
 | `sky.alioss.*` | 菜品图片上传到阿里云 OSS | 上传图片时需要 |
 | `sky.wechat.*` | 微信支付（商户号、证书、回调地址） | 支付功能需要 |
 | `sky.baidu.ak` | 百度地图距离计算 | 配送距离检测需要 |
-| `QW-API-KEY` | 通义千问 API Key | **AI 助手需要** |
+| `QW-API-KEY` | 通义千问 API Key | **启动必需** |
 
 ### Redis 说明
 
@@ -444,6 +457,31 @@ Header: token: {JWT令牌}
 ```
 http://localhost:8080/doc.html
 ```
+
+---
+
+## 常见问题
+
+### 启动报 `Could not resolve placeholder 'QW-API-KEY'`
+
+没配置通义千问 API Key。它是**启动必需项**，不是可选的 AI 功能——LangChain4j 的自动配置在条件评估阶段就要读取 `${QW-API-KEY}`，解析不到会直接中断启动。按 [3. 配置 AI 密钥](#3-配置-ai-密钥) 设置即可。
+
+### 启动报 `ClassNotFoundException: ${sky.datasource.driver-class-name}`
+
+`application-dev.yml` 不存在。它是本地配置文件，不进版本库，需要先按 [2. 配置后端](#2-配置后端) 从模板复制一份。
+
+注意**复制要在打包之前**：`mvn package` 只把打包那一刻存在的资源打进 jar，打完包再补文件，jar 里依旧是缺的。
+
+### 接口返回 `{"code":0,"msg":"未知错误"}`
+
+先看后端日志的堆栈，两种常见情况：
+
+- `NoResourceFoundException: No static resource xxx` —— 请求路径写错了。兜底异常处理器会把这类 404 一并转成统一返回结构，所以看到的不是 HTTP 404。核对路径前缀（管理端 `/admin/**`，用户端 `/user/**`）。
+- `Communications link failure`、`Access denied` —— MySQL 没启动，或 `application-dev.yml` 里的库名、账号、密码不对。
+
+### 导入 SQL 报错
+
+脚本内已包含 `CREATE DATABASE sky_take_out`，不需要先手动建库。另外 PowerShell 不支持 `<` 重定向，用 `-e "source ..."` 的写法（见 [1. 准备数据库](#1-准备数据库)）。
 
 ---
 
