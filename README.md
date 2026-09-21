@@ -149,10 +149,14 @@ copy sky-server\src\main\resources\application-dev.yml.example sky-server\src\ma
 cp sky-server/src/main/resources/application-dev.yml.example sky-server/src/main/resources/application-dev.yml
 ```
 
-然后编辑 `application-dev.yml`，把 `your-xxx` 占位符替换成真实配置：
+然后编辑 `application-dev.yml`，把占位符替换成自己的真实配置：
 
 ```yaml
 sky:
+  jwt:
+    # 不少于 32 字节的随机字符串，管理端与用户端分别设置
+    admin-secret-key: 你的管理端密钥
+    user-secret-key: 你的用户端密钥
   datasource:
     host: localhost
     port: 3306
@@ -165,6 +169,9 @@ sky:
     password: 你的Redis密码
     database: 10
 ```
+
+> `application.yml` 里 `sky.jwt` 的两个密钥不写默认值，真实值只存在于本文件或环境变量中。
+> 生成随机密钥：`openssl rand -base64 32`（Git Bash / Linux / macOS 均可），长度不少于 32 字节。
 
 **方式二：环境变量（CI/CD、容器部署）**
 
@@ -180,6 +187,8 @@ Spring Boot 会用环境变量覆盖同名配置项，转换规则是
 | `sky.alioss.access-key-secret` | `SKY_ALIOSS_ACCESS_KEY_SECRET` |
 | `sky.wechat.secret` | `SKY_WECHAT_SECRET` |
 | `sky.baidu.ak` | `SKY_BAIDU_AK` |
+| `sky.jwt.admin-secret-key` | `SKY_JWT_ADMIN_SECRET` |
+| `sky.jwt.user-secret-key` | `SKY_JWT_USER_SECRET` |
 
 ```bash
 # Windows (PowerShell)
