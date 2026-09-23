@@ -187,6 +187,32 @@ INSERT INTO `employee` VALUES (1,'管理员','admin','e10adc3949ba59abbe56e057f2
 UNLOCK TABLES;
 
 --
+-- Table structure for table `employee_role`
+--
+
+DROP TABLE IF EXISTS `employee_role`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `employee_role` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `employee_id` bigint NOT NULL COMMENT '员工id',
+  `role_id` bigint NOT NULL COMMENT '角色id',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_emp_role` (`employee_id`,`role_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='员工-角色关联';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `employee_role`
+--
+
+LOCK TABLES `employee_role` WRITE;
+/*!40000 ALTER TABLE `employee_role` DISABLE KEYS */;
+INSERT INTO `employee_role` VALUES (1,1,1),(2,3,2),(3,10,3);
+/*!40000 ALTER TABLE `employee_role` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `order_detail`
 --
 
@@ -261,6 +287,95 @@ LOCK TABLES `orders` WRITE;
 /*!40000 ALTER TABLE `orders` DISABLE KEYS */;
 INSERT INTO `orders` VALUES (6,'1779803454860',6,4,2,'2026-05-26 21:50:55',NULL,1,0,247.00,'','15501145441','1号',NULL,'张三','支付超时，自动取消',NULL,'2026-06-07 05:21:46','2026-05-26 22:50:00',0,NULL,9,0,0),(7,'1780315934669',6,4,2,'2026-06-01 20:12:15',NULL,1,0,183.00,'','15501145441','1号',NULL,'张三','支付超时，自动取消',NULL,'2026-06-07 05:21:46','2026-06-01 21:12:00',0,NULL,3,0,0),(8,'1780316576821',5,4,2,'2026-06-01 20:22:57','2026-06-01 20:32:58',1,1,126.00,'','15501145441','1号',NULL,'张三',NULL,NULL,NULL,'2026-06-01 21:22:00',0,'2026-06-19 17:45:41',1,0,0),(9,'1780317189057',6,4,2,'2026-06-01 20:33:09','2026-06-01 20:33:10',1,1,75.00,'','15501145441','1号',NULL,'张三',NULL,'餐厅已打烊，暂时无法接单','2026-06-05 16:53:00','2026-06-01 21:33:00',0,NULL,1,0,0),(10,'1780317240510',6,4,2,'2026-06-01 20:34:01','2026-06-01 20:34:01',1,1,73.00,'','15501145441','1号',NULL,'张三','用户取消',NULL,'2026-06-02 18:50:52','2026-06-01 21:33:00',0,NULL,6,0,0),(11,'1780317521815',5,4,2,'2026-06-01 20:38:42','2026-06-01 20:38:43',1,1,179.00,'','15501145441','1号',NULL,'张三',NULL,NULL,NULL,'2026-06-01 21:38:00',0,'2026-06-05 17:48:01',5,0,0),(12,'1780398569227',6,4,2,'2026-06-02 19:09:29','2026-06-02 19:09:31',1,1,73.00,'','15501145441','1号',NULL,'张三','订单量较多，暂时无法接单',NULL,'2026-06-05 17:40:39','2026-06-02 20:09:00',0,NULL,6,0,0),(13,'1780655083720',5,4,4,'2026-06-05 18:24:44','2026-06-05 18:24:46',1,1,323.00,'','13655220337','北京海淀颐和园路5号',NULL,'李四',NULL,NULL,NULL,'2026-06-05 19:24:00',0,'2026-06-19 17:45:40',13,0,0),(14,'1780824422398',5,4,4,'2026-06-07 17:27:02','2026-06-07 17:27:04',1,1,126.00,'','13655220337','北京海淀颐和园路5号',NULL,'李四',NULL,NULL,NULL,'2026-06-07 18:26:00',0,'2026-06-19 17:45:40',1,0,0),(15,'1780824598180',5,4,4,'2026-06-07 17:29:58','2026-06-07 17:29:59',1,1,82.00,'','13655220337','北京海淀颐和园路5号',NULL,'李四',NULL,NULL,NULL,'2026-06-07 18:29:00',0,'2026-06-19 17:45:39',2,0,0);
 /*!40000 ALTER TABLE `orders` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `permission`
+--
+
+DROP TABLE IF EXISTS `permission`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `permission` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `code` varchar(128) NOT NULL COMMENT '权限点，如 dish:add',
+  `name` varchar(64) NOT NULL COMMENT '权限名称',
+  `type` tinyint NOT NULL DEFAULT '2' COMMENT '1菜单 2按钮/接口',
+  `parent_id` bigint DEFAULT NULL COMMENT '父级，前端做树用',
+  `create_time` datetime DEFAULT NULL,
+  `update_time` datetime DEFAULT NULL,
+  `create_user` bigint DEFAULT NULL,
+  `update_user` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='权限表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `permission`
+--
+
+LOCK TABLES `permission` WRITE;
+/*!40000 ALTER TABLE `permission` DISABLE KEYS */;
+INSERT INTO `permission` VALUES (1,'dish:query','菜品查询',2,NULL,NULL,NULL,NULL,NULL),(2,'dish:add','菜品新增',2,NULL,NULL,NULL,NULL,NULL),(3,'dish:update','菜品修改',2,NULL,NULL,NULL,NULL,NULL),(4,'dish:delete','菜品删除',2,NULL,NULL,NULL,NULL,NULL),(5,'dish:status','菜品上下架',2,NULL,NULL,NULL,NULL,NULL),(6,'category:query','分类查询',2,NULL,NULL,NULL,NULL,NULL),(7,'category:add','分类新增',2,NULL,NULL,NULL,NULL,NULL),(8,'category:update','分类修改',2,NULL,NULL,NULL,NULL,NULL),(9,'category:delete','分类删除',2,NULL,NULL,NULL,NULL,NULL),(10,'category:status','分类启禁用',2,NULL,NULL,NULL,NULL,NULL),(11,'setmeal:query','套餐查询',2,NULL,NULL,NULL,NULL,NULL),(12,'setmeal:add','套餐新增',2,NULL,NULL,NULL,NULL,NULL),(13,'setmeal:update','套餐修改',2,NULL,NULL,NULL,NULL,NULL),(14,'setmeal:delete','套餐删除',2,NULL,NULL,NULL,NULL,NULL),(15,'setmeal:status','套餐上下架',2,NULL,NULL,NULL,NULL,NULL),(16,'order:query','订单查询',2,NULL,NULL,NULL,NULL,NULL),(17,'order:statistics','订单统计',2,NULL,NULL,NULL,NULL,NULL),(18,'report:export','报表导出',2,NULL,NULL,NULL,NULL,NULL);
+/*!40000 ALTER TABLE `permission` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `role`
+--
+
+DROP TABLE IF EXISTS `role`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `role` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `code` varchar(64) NOT NULL COMMENT '角色编码，如 ADMIN',
+  `name` varchar(64) NOT NULL COMMENT '角色名称',
+  `description` varchar(255) DEFAULT NULL COMMENT '说明',
+  `create_time` datetime DEFAULT NULL,
+  `update_time` datetime DEFAULT NULL,
+  `create_user` bigint DEFAULT NULL,
+  `update_user` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `role`
+--
+
+LOCK TABLES `role` WRITE;
+/*!40000 ALTER TABLE `role` DISABLE KEYS */;
+INSERT INTO `role` VALUES (1,'ADMIN','超级管理员','拥有全部权限',NULL,NULL,NULL,NULL),(2,'OPERATOR','运营','菜品/分类/套餐的日常维护',NULL,NULL,NULL,NULL),(3,'FINANCE','财务','订单查询与报表导出',NULL,NULL,NULL,NULL);
+/*!40000 ALTER TABLE `role` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `role_permission`
+--
+
+DROP TABLE IF EXISTS `role_permission`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `role_permission` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `role_id` bigint NOT NULL COMMENT '角色id',
+  `permission_id` bigint NOT NULL COMMENT '权限id',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_role_perm` (`role_id`,`permission_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色-权限关联';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `role_permission`
+--
+
+LOCK TABLES `role_permission` WRITE;
+/*!40000 ALTER TABLE `role_permission` DISABLE KEYS */;
+INSERT INTO `role_permission` VALUES (8,1,1),(6,1,2),(10,1,3),(7,1,4),(9,1,5),(3,1,6),(1,1,7),(5,1,8),(2,1,9),(4,1,10),(16,1,11),(14,1,12),(18,1,13),(15,1,14),(17,1,15),(11,1,16),(12,1,17),(13,1,18),(39,2,1),(37,2,2),(41,2,3),(38,2,4),(40,2,5),(34,2,6),(32,2,7),(36,2,8),(33,2,9),(35,2,10),(44,2,11),(42,2,12),(46,2,13),(43,2,14),(45,2,15),(47,3,16),(48,3,17),(49,3,18);
+/*!40000 ALTER TABLE `role_permission` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -395,4 +510,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-09-21 20:38:13
+-- Dump completed on 2026-09-23 19:47:48
