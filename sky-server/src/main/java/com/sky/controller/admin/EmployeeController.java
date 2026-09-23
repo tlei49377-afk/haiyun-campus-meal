@@ -9,6 +9,7 @@ import com.sky.properties.JwtProperties;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.EmployeeService;
+import com.sky.service.PermissionService;
 import com.sky.utils.JwtUtil;
 import com.sky.vo.EmployeeLoginVO;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,8 @@ public class EmployeeController {
     private EmployeeService employeeService;
     @Autowired
     private JwtProperties jwtProperties;
+    @Autowired
+    private PermissionService permissionService;
 
     /**
      * 登录
@@ -56,6 +59,7 @@ public class EmployeeController {
                 .userName(employee.getUsername())
                 .name(employee.getName())
                 .token(token)
+                .permissions(permissionService.listCodesByEmployeeId(employee.getId()))
                 .build();
 
         return Result.success(employeeLoginVO);

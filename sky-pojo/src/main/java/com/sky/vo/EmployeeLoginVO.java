@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @Builder
@@ -27,5 +28,8 @@ public class EmployeeLoginVO implements Serializable {
 
     @Schema(description = "jwt令牌")
     private String token;
+
+    @Schema(description = "权限列表")
+    private List<String> permissions;
 
 }
