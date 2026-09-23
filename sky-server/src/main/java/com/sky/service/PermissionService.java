@@ -10,4 +10,10 @@ public interface PermissionService {
      * @return
      */
     List<String> listCodesByEmployeeId(Long employeeId);
+
+    /**
+     * 删除员工的权限缓存
+     * @param employeeId
+     */
+    void evictCache(Long employeeId);
 }
