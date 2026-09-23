@@ -17,6 +17,7 @@ import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
 import com.github.pagehelper.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class DishServiceImpl implements DishService {
 
     @Autowired
@@ -89,6 +91,11 @@ public class DishServiceImpl implements DishService {
         // 判断当前菜品是否能够删除---是否存在起售中的菜品？
         for (Long id : ids) {
             Dish dish = dishMapper.getById(id);
+            if (dish == null) {
+                // 菜品已经不存在了，跳过。批量删除保持幂等，重复提交或传入脏 id 都不应该整批失败
+                log.warn("菜品不存在，跳过删除：{}", id);
+                continue;
+            }
             if(dish.getStatus() == StatusConstant.ENABLE){
                 // 当前菜品处于起售中，不能删除
                 throw new DeletionNotAllowedException(MessageConstant.DISH_ON_SALE);
