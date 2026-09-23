@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.RequirePermission;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
@@ -35,6 +36,7 @@ public class DishController {
      * @param dishDTO
      * @return
      */
+    @RequirePermission("dish:add")
     @PostMapping
     public Result save(@RequestBody DishDTO dishDTO) {
         log.info("新增菜品：{}", dishDTO);
@@ -64,6 +66,7 @@ public class DishController {
      * @param ids
      * @return
      */
+    @RequirePermission("dish:delete")
     @DeleteMapping
     public Result delete(@RequestParam List<Long> ids) {
         log.info("批量删除：{}", ids);
@@ -122,6 +125,7 @@ public class DishController {
      * @return
      */
     @PostMapping("/status/{status}")
+    @RequirePermission("dish:status")
     @Operation(summary = "菜品起售停售")
     public Result<String> startOrStop(@PathVariable Integer status, Long id){
         dishService.startOrStop(status,id);

@@ -25,5 +25,6 @@ public class MessageConstant {
     public static final String ORDER_STATUS_ERROR = "订单状态错误";
     public static final String ORDER_NOT_FOUND = "订单不存在";
     public static final String PARAM_ERROR = "参数校验失败";
+    public static final String NO_PERMISSION = "没有权限";
 
 }
