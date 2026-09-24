@@ -5,12 +5,14 @@ import com.sky.constant.JwtClaimsConstant;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
 import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.dto.EmployeeRoleDTO;
 import com.sky.entity.Employee;
 import com.sky.properties.JwtProperties;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.EmployeeService;
 import com.sky.service.PermissionService;
+import com.sky.service.RoleService;
 import com.sky.utils.JwtUtil;
 import com.sky.vo.EmployeeLoginVO;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,6 +37,8 @@ public class EmployeeController {
     private JwtProperties jwtProperties;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private RoleService roleService;
 
     /**
      * 登录
@@ -138,6 +143,31 @@ public class EmployeeController {
     public Result update(@RequestBody EmployeeDTO employeeDTO){
         log.info("编辑员工信息：{}", employeeDTO);
         employeeService.update(employeeDTO);
+        return Result.success();
+    }
+
+    /**
+     * 查询员工已分配的角色
+     * @param id
+     * @return
+     */
+    @RequirePermission("role:query")
+    @GetMapping("/{id}/roles")
+    public Result<List<Long>> listRoles(@PathVariable Long id) {
+        return Result.success(roleService.listRoleIdsByEmployeeId(id));
+    }
+
+    /**
+     * 给员工分配角色
+     * @param id
+     * @param employeeRoleDTO
+     * @return
+     */
+    @RequirePermission("role:assign")
+    @PutMapping("/{id}/roles")
+    public Result<String> assignRoles(@PathVariable Long id, @RequestBody EmployeeRoleDTO employeeRoleDTO) {
+        log.info("员工分配角色：employeeId={}, roleIds={}", id, employeeRoleDTO.getRoleIds());
+        roleService.assignRoles(id, employeeRoleDTO.getRoleIds());
         return Result.success();
     }
 }

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sky.mapper.RoleMapper">
+
+    <select id="list" resultType="com.sky.entity.Role">
+        select * from `role` order by id
+    </select>
+
+    <select id="listPermissionIdsByRoleId" resultType="java.lang.Long">
+        select permission_id from role_permission where role_id = #{roleId}
+    </select>
+
+    <delete id="deleteRolePermission">
+        delete from role_permission where role_id = #{roleId}
+    </delete>
+
+    <insert id="insertRolePermission">
+        insert into role_permission (role_id, permission_id) values
+        <foreach collection="permissionIds" item="permissionId" separator=",">
+            (#{roleId}, #{permissionId})
+        </foreach>
+    </insert>
+
+    <select id="listEmployeeIdsByRoleId" resultType="java.lang.Long">
+        select employee_id from employee_role where role_id = #{roleId}
+    </select>
+
+    <select id="listRoleIdsByEmployeeId" resultType="java.lang.Long">
+        select role_id from employee_role where employee_id = #{employeeId}
+    </select>
+
+    <delete id="deleteEmployeeRole">
+        delete from employee_role where employee_id = #{employeeId}
+    </delete>
+
+    <insert id="insertEmployeeRole">
+        insert into employee_role (employee_id, role_id) values
+        <foreach collection="roleIds" item="roleId" separator=",">
+            (#{employeeId}, #{roleId})
+        </foreach>
+    </insert>
+
+</mapper>

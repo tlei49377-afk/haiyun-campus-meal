@@ -1,6 +1,7 @@
 package com.sky.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.sky.entity.Permission;
 import com.sky.mapper.PermissionMapper;
 import com.sky.service.PermissionService;
 import lombok.extern.slf4j.Slf4j;
@@ -53,5 +54,13 @@ public class PermissionServiceImpl implements PermissionService {
      */
     public void evictCache(Long employeeId) {
         redisTemplate.delete(CACHE_KEY_PREFIX + employeeId);
+    }
+
+    /**
+     * 查询全部权限点
+     * @return
+     */
+    public List<Permission> list() {
+        return permissionMapper.list();
     }
 }

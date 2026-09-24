@@ -1,6 +1,8 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.RequirePermission;
 import com.sky.context.BaseContext;
+import com.sky.entity.Permission;
 import com.sky.result.Result;
 import com.sky.service.PermissionService;
 import lombok.extern.slf4j.Slf4j;
@@ -26,5 +28,15 @@ public class PermissionController {
     @GetMapping("/me")
     public Result<List<String>> me() {
         return Result.success(permissionService.listCodesByEmployeeId(BaseContext.getCurrentId()));
+    }
+
+    /**
+     * 查询全部权限点
+     * @return
+     */
+    @RequirePermission("role:query")
+    @GetMapping("/list")
+    public Result<List<Permission>> list() {
+        return Result.success(permissionService.list());
     }
 }

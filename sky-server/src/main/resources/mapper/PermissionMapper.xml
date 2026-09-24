@@ -9,4 +9,8 @@
         join permission p on p.id = rp.permission_id
         where er.employee_id = #{employeeId}
     </select>
+
+    <select id="list" resultType="com.sky.entity.Permission">
+        select * from permission order by id
+    </select>
 </mapper>
