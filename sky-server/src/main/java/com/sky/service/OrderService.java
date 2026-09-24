@@ -26,8 +26,9 @@ public interface OrderService {
     /**
      * 支付成功，修改订单状态
      * @param outTradeNo
+     * @param transactionId
      */
-    void paySuccess(String outTradeNo);
+    void paySuccess(String outTradeNo, String transactionId);
 
     /**
      * 用户端订单分页查询

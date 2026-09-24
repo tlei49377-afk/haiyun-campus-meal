@@ -290,6 +290,31 @@ INSERT INTO `orders` VALUES (6,'1779803454860',6,4,2,'2026-05-26 21:50:55',NULL,
 UNLOCK TABLES;
 
 --
+-- Table structure for table `payment_callback_log`
+--
+
+DROP TABLE IF EXISTS `payment_callback_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `payment_callback_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `out_trade_no` varchar(64) NOT NULL COMMENT '商户订单号',
+  `transaction_id` varchar(64) NOT NULL COMMENT '微信支付交易号',
+  `create_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_out_trade_transaction` (`out_trade_no`,`transaction_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='支付回调流水';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `payment_callback_log`
+--
+
+LOCK TABLES `payment_callback_log` WRITE;
+/*!40000 ALTER TABLE `payment_callback_log` DISABLE KEYS */;
+/*!40000 ALTER TABLE `payment_callback_log` ENABLE KEYS */;
+UNLOCK TABLES;
+--
 -- Table structure for table `permission`
 --
 
@@ -308,7 +333,7 @@ CREATE TABLE `permission` (
   `update_user` bigint DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='权限表';
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='权限表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -317,7 +342,7 @@ CREATE TABLE `permission` (
 
 LOCK TABLES `permission` WRITE;
 /*!40000 ALTER TABLE `permission` DISABLE KEYS */;
-INSERT INTO `permission` VALUES (1,'dish:query','菜品查询',2,NULL,NULL,NULL,NULL,NULL),(2,'dish:add','菜品新增',2,NULL,NULL,NULL,NULL,NULL),(3,'dish:update','菜品修改',2,NULL,NULL,NULL,NULL,NULL),(4,'dish:delete','菜品删除',2,NULL,NULL,NULL,NULL,NULL),(5,'dish:status','菜品上下架',2,NULL,NULL,NULL,NULL,NULL),(6,'category:query','分类查询',2,NULL,NULL,NULL,NULL,NULL),(7,'category:add','分类新增',2,NULL,NULL,NULL,NULL,NULL),(8,'category:update','分类修改',2,NULL,NULL,NULL,NULL,NULL),(9,'category:delete','分类删除',2,NULL,NULL,NULL,NULL,NULL),(10,'category:status','分类启禁用',2,NULL,NULL,NULL,NULL,NULL),(11,'setmeal:query','套餐查询',2,NULL,NULL,NULL,NULL,NULL),(12,'setmeal:add','套餐新增',2,NULL,NULL,NULL,NULL,NULL),(13,'setmeal:update','套餐修改',2,NULL,NULL,NULL,NULL,NULL),(14,'setmeal:delete','套餐删除',2,NULL,NULL,NULL,NULL,NULL),(15,'setmeal:status','套餐上下架',2,NULL,NULL,NULL,NULL,NULL),(16,'order:query','订单查询',2,NULL,NULL,NULL,NULL,NULL),(17,'order:statistics','订单统计',2,NULL,NULL,NULL,NULL,NULL),(18,'report:export','报表导出',2,NULL,NULL,NULL,NULL,NULL),(19,'order:handle','订单处理',2,NULL,NULL,NULL,NULL,NULL),(20,'order:cancel','订单取消',2,NULL,NULL,NULL,NULL,NULL),(21,'employee:query','员工查询',2,NULL,NULL,NULL,NULL,NULL),(22,'employee:add','员工新增',2,NULL,NULL,NULL,NULL,NULL),(23,'employee:update','员工修改',2,NULL,NULL,NULL,NULL,NULL),(24,'employee:status','员工启用禁用',2,NULL,NULL,NULL,NULL,NULL),(25,'report:query','报表查询',2,NULL,NULL,NULL,NULL,NULL),(26,'shop:status','营业状态调整',2,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `permission` VALUES (1,'dish:query','菜品查询',2,NULL,NULL,NULL,NULL,NULL),(2,'dish:add','菜品新增',2,NULL,NULL,NULL,NULL,NULL),(3,'dish:update','菜品修改',2,NULL,NULL,NULL,NULL,NULL),(4,'dish:delete','菜品删除',2,NULL,NULL,NULL,NULL,NULL),(5,'dish:status','菜品上下架',2,NULL,NULL,NULL,NULL,NULL),(6,'category:query','分类查询',2,NULL,NULL,NULL,NULL,NULL),(7,'category:add','分类新增',2,NULL,NULL,NULL,NULL,NULL),(8,'category:update','分类修改',2,NULL,NULL,NULL,NULL,NULL),(9,'category:delete','分类删除',2,NULL,NULL,NULL,NULL,NULL),(10,'category:status','分类启禁用',2,NULL,NULL,NULL,NULL,NULL),(11,'setmeal:query','套餐查询',2,NULL,NULL,NULL,NULL,NULL),(12,'setmeal:add','套餐新增',2,NULL,NULL,NULL,NULL,NULL),(13,'setmeal:update','套餐修改',2,NULL,NULL,NULL,NULL,NULL),(14,'setmeal:delete','套餐删除',2,NULL,NULL,NULL,NULL,NULL),(15,'setmeal:status','套餐上下架',2,NULL,NULL,NULL,NULL,NULL),(16,'order:query','订单查询',2,NULL,NULL,NULL,NULL,NULL),(17,'order:statistics','订单统计',2,NULL,NULL,NULL,NULL,NULL),(18,'report:export','报表导出',2,NULL,NULL,NULL,NULL,NULL),(19,'order:handle','订单处理',2,NULL,NULL,NULL,NULL,NULL),(20,'order:cancel','订单取消',2,NULL,NULL,NULL,NULL,NULL),(21,'employee:query','员工查询',2,NULL,NULL,NULL,NULL,NULL),(22,'employee:add','员工新增',2,NULL,NULL,NULL,NULL,NULL),(23,'employee:update','员工修改',2,NULL,NULL,NULL,NULL,NULL),(24,'employee:status','员工启用禁用',2,NULL,NULL,NULL,NULL,NULL),(25,'report:query','报表查询',2,NULL,NULL,NULL,NULL,NULL),(26,'shop:status','营业状态调整',2,NULL,NULL,NULL,NULL,NULL),(27,'role:query','角色查询',2,NULL,NULL,NULL,NULL,NULL),(28,'role:assign','角色权限分配',2,NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `permission` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -365,7 +390,7 @@ CREATE TABLE `role_permission` (
   `permission_id` bigint NOT NULL COMMENT '权限id',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_role_perm` (`role_id`,`permission_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色-权限关联';
+) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色-权限关联';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -374,7 +399,7 @@ CREATE TABLE `role_permission` (
 
 LOCK TABLES `role_permission` WRITE;
 /*!40000 ALTER TABLE `role_permission` DISABLE KEYS */;
-INSERT INTO `role_permission` VALUES (8,1,1),(6,1,2),(10,1,3),(7,1,4),(9,1,5),(3,1,6),(1,1,7),(5,1,8),(2,1,9),(4,1,10),(16,1,11),(14,1,12),(18,1,13),(15,1,14),(17,1,15),(11,1,16),(12,1,17),(13,1,18),(39,2,1),(37,2,2),(41,2,3),(38,2,4),(40,2,5),(34,2,6),(32,2,7),(36,2,8),(33,2,9),(35,2,10),(44,2,11),(42,2,12),(46,2,13),(43,2,14),(45,2,15),(47,3,16),(48,3,17),(49,3,18),(50,1,19),(51,1,20),(52,1,21),(53,1,22),(54,1,23),(55,1,24),(56,1,25),(57,1,26),(58,2,16),(59,2,19),(60,2,20),(61,3,25);
+INSERT INTO `role_permission` VALUES (8,1,1),(6,1,2),(10,1,3),(7,1,4),(9,1,5),(3,1,6),(1,1,7),(5,1,8),(2,1,9),(4,1,10),(16,1,11),(14,1,12),(18,1,13),(15,1,14),(17,1,15),(11,1,16),(12,1,17),(13,1,18),(39,2,1),(37,2,2),(41,2,3),(38,2,4),(40,2,5),(34,2,6),(32,2,7),(36,2,8),(33,2,9),(35,2,10),(44,2,11),(42,2,12),(46,2,13),(43,2,14),(45,2,15),(47,3,16),(48,3,17),(49,3,18),(50,1,19),(51,1,20),(52,1,21),(53,1,22),(54,1,23),(55,1,24),(56,1,25),(57,1,26),(58,2,16),(59,2,19),(60,2,20),(61,3,25),(62,1,27),(63,1,28);
 /*!40000 ALTER TABLE `role_permission` ENABLE KEYS */;
 UNLOCK TABLES;
 

@@ -8,6 +8,7 @@ import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.*;
 import com.sky.entity.*;
+import com.sky.enumeration.OrderStatus;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.*;
 import com.sky.result.PageResult;
@@ -39,6 +40,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderMapper orderMapper;
+    @Autowired
+    private PaymentCallbackLogMapper paymentCallbackLogMapper;
     @Autowired
     private OrderDetailMapper orderDetailMapper;
     @Autowired
@@ -173,11 +176,23 @@ public class OrderServiceImpl implements OrderService {
      * 支付成功，修改订单状态
      *
      * @param outTradeNo
+     * @param transactionId
      */
-    public void paySuccess(String outTradeNo) {
+    @Transactional
+    public void paySuccess(String outTradeNo, String transactionId) {
+
+        // 记录回调流水，重复的回调会因唯一键冲突被忽略
+        if (paymentCallbackLogMapper.insertIgnore(outTradeNo, transactionId) == 0) {
+            log.info("重复的支付回调，直接返回：{}", outTradeNo);
+            return;
+        }
 
         // 根据订单号查询订单
         Orders ordersDB = orderMapper.getByNumber(outTradeNo);
+        if (ordersDB == null) {
+            log.warn("支付回调对应的订单不存在：{}", outTradeNo);
+            return;
+        }
 
         // 根据订单id更新订单的状态、支付方式、支付状态、结账时间
         Orders orders = Orders.builder()
@@ -187,7 +202,11 @@ public class OrderServiceImpl implements OrderService {
                 .checkoutTime(LocalDateTime.now())
                 .build();
 
-        orderMapper.update(orders);
+        // 只有待付款的订单可以流转到待接单，避免与超时取消互相覆盖
+        if (orderMapper.updateStatusIfMatch(orders, Orders.PENDING_PAYMENT) == 0) {
+            log.info("订单状态已变更，跳过支付成功处理：{}", outTradeNo);
+            return;
+        }
 
         // 通过websocket发送消息给客户端 type orderId content
         Map map = new HashMap();
@@ -404,12 +423,20 @@ public class OrderServiceImpl implements OrderService {
      * @param orderConfirmDTO
      */
     public void confirm(OrdersConfirmDTO orderConfirmDTO) {
+        Orders ordersDB = orderMapper.getById(orderConfirmDTO.getId());
+        if (ordersDB == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        OrderStatus.checkTransfer(ordersDB.getStatus(), Orders.CONFIRMED);
+
         Orders orders = Orders.builder()
                 .id(orderConfirmDTO.getId())
                 .status(Orders.CONFIRMED)
                 .build();
 
-        orderMapper.update(orders);
+        if (orderMapper.updateStatusIfMatch(orders, ordersDB.getStatus()) == 0) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
     }
 
     /**
@@ -419,17 +446,16 @@ public class OrderServiceImpl implements OrderService {
     public void rejection(OrdersRejectionDTO ordersRejectionDTO) {
         // 根据id查询订单
         Orders ordersDB = orderMapper.getById(ordersRejectionDTO.getId());
-
-        // 订单只有存在且状态为2（待接单）时才可拒单
-        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
+        if (ordersDB == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
 
+        // 只有待接单的订单可以拒单
+        OrderStatus.checkTransfer(ordersDB.getStatus(), Orders.CANCELLED);
+
         // 支付状态
-        Integer payStatus = ordersDB.getPayStatus();
-        if (payStatus == Orders.PAID) {
+        if (Orders.PAID.equals(ordersDB.getPayStatus())) {
             // 已支付，需要退款
-            // 微信支付接口：refund
             // 微信退款接口：pay/refund
 //            String refund = weChatPayUtil.refund(
 //                    ordersDB.getNumber(),
@@ -447,7 +473,9 @@ public class OrderServiceImpl implements OrderService {
                 .cancelTime(LocalDateTime.now())
                 .build();
 
-        orderMapper.update(orders);
+        if (orderMapper.updateStatusIfMatch(orders, ordersDB.getStatus()) == 0) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
     }
 
     /**
@@ -457,11 +485,14 @@ public class OrderServiceImpl implements OrderService {
     public void cancel(OrdersCancelDTO ordersCancellationDTO) {
         // 根据id查询订单
         Orders ordersDB = orderMapper.getById(ordersCancellationDTO.getId());
+        if (ordersDB == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
 
-        Integer payStatus = ordersDB.getStatus();
-        if (payStatus == Orders.PAID) {
+        OrderStatus.checkTransfer(ordersDB.getStatus(), Orders.CANCELLED);
+
+        if (Orders.PAID.equals(ordersDB.getPayStatus())) {
             // 已支付，需要退款
-            // 微信支付接口：refund
             // 微信退款接口：pay/refund
 //            String refund = weChatPayUtil.refund(
 //                    ordersDB.getNumber(),
@@ -479,7 +510,9 @@ public class OrderServiceImpl implements OrderService {
                 .cancelTime(LocalDateTime.now())
                 .build();
 
-        orderMapper.update(orders);
+        if (orderMapper.updateStatusIfMatch(orders, ordersDB.getStatus()) == 0) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
     }
 
     /**
@@ -489,18 +522,21 @@ public class OrderServiceImpl implements OrderService {
     public void delivery(Long id) {
         // 根据id查询订单
         Orders orderDB = orderMapper.getById(id);
-
-        // 判断订单状态，是否存在并处于3待派送状态
-        if (orderDB == null || !orderDB.getStatus().equals(Orders.CONFIRMED)) {
+        if (orderDB == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
+
+        // 只有已接单的订单可以派送
+        OrderStatus.checkTransfer(orderDB.getStatus(), Orders.DELIVERY_IN_PROGRESS);
 
         Orders orders = Orders.builder()
                 .id(orderDB.getId())
                 .status(Orders.DELIVERY_IN_PROGRESS)
                 .build();
 
-        orderMapper.update(orders);
+        if (orderMapper.updateStatusIfMatch(orders, orderDB.getStatus()) == 0) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
     }
 
     /**
@@ -510,11 +546,12 @@ public class OrderServiceImpl implements OrderService {
     public void complete(Long id) {
         // 根据id查询订单
         Orders orderDB = orderMapper.getById(id);
-
-        // 订单只有存在且状态为4（派送中）时才可完成
-        if (orderDB == null || !orderDB.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)) {
+        if (orderDB == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
+
+        // 只有派送中的订单可以完成
+        OrderStatus.checkTransfer(orderDB.getStatus(), Orders.COMPLETED);
 
         Orders orders = Orders.builder()
                 .id(orderDB.getId())
@@ -522,7 +559,9 @@ public class OrderServiceImpl implements OrderService {
                 .deliveryTime(LocalDateTime.now())
                 .build();
 
-        orderMapper.update(orders);
+        if (orderMapper.updateStatusIfMatch(orders, orderDB.getStatus()) == 0) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
     }
 
     /**

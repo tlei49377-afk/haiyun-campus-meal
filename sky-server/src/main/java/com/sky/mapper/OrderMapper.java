@@ -34,6 +34,14 @@ public interface OrderMapper {
     void update(Orders orders);
 
     /**
+     * 按期望状态修改订单，返回更新行数，0 表示状态已被其他请求改变
+     * @param orders
+     * @param expectedStatus
+     * @return
+     */
+    int updateStatusIfMatch(Orders orders, Integer expectedStatus);
+
+    /**
      * 用于替代微信支付更新数据库状态的问题
      * @param orderStatus 订单状态
      * @param orderPaidStatus 支付状态
@@ -73,8 +81,8 @@ public interface OrderMapper {
      * @param orderTime
      * @return
      */
-    @Select("select * from orders where status = #{status} and order_time < #{orderTime}")
-    List<Orders> getByStatusAudOrderTimeLT(Integer status, LocalDateTime orderTime);
+    @Select("select * from orders where status = #{status} and order_time < #{orderTime} limit #{limit}")
+    List<Orders> getByStatusAudOrderTimeLT(Integer status, LocalDateTime orderTime, Integer limit);
 
     /**
      * 根据动态条件统计营业额数据

@@ -46,7 +46,8 @@ public class OrderController {
         OrderPaymentVO orderPaymentVO = orderService.payment(ordersPaymentDTO);
         log.info("生成预支付交易单：{}", orderPaymentVO);
 
-        orderService.paySuccess(ordersPaymentDTO.getOrderNumber());
+        // 未接入真实微信支付，用模拟交易号，同一订单重复支付同样会被幂等拦截
+        orderService.paySuccess(ordersPaymentDTO.getOrderNumber(), "MOCK_" + ordersPaymentDTO.getOrderNumber());
 
         return Result.success(orderPaymentVO);
     }

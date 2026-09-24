@@ -17,6 +17,9 @@ import java.util.List;
 @Slf4j
 public class OrderTask {
 
+    // 每批处理的订单数量
+    private static final int BATCH_SIZE = 100;
+
     @Autowired
     private OrderMapper orderMapper;
 
@@ -27,18 +30,36 @@ public class OrderTask {
     public void processTimeoutOrders(){
         log.info("处理超时订单：{}", LocalDateTime.now());
 
-        // 查询超时订单
-        List<Orders> ordersList = orderMapper.getByStatusAudOrderTimeLT(Orders.PENDING_PAYMENT, LocalDateTime.now().plusMinutes(-15));
+        LocalDateTime deadline = LocalDateTime.now().plusMinutes(-15);
+        int handled = 0;
 
-        if (ordersList != null && ordersList.size() > 0){
-            // 遍历超时订单，更新订单状态
+        // 分批处理，避免一次捞出过多订单
+        while (true){
+            List<Orders> ordersList = orderMapper.getByStatusAudOrderTimeLT(Orders.PENDING_PAYMENT, deadline, BATCH_SIZE);
+            if (ordersList == null || ordersList.isEmpty()){
+                break;
+            }
+
             for (Orders orders : ordersList){
-                orders.setStatus(Orders.CANCELLED);
-                orders.setCancelReason("支付超时，自动取消");
-                orders.setCancelTime(LocalDateTime.now());
-                orderMapper.update(orders);
+                Orders update = Orders.builder()
+                        .id(orders.getId())
+                        .status(Orders.CANCELLED)
+                        .cancelReason("支付超时，自动取消")
+                        .cancelTime(LocalDateTime.now())
+                        .build();
+
+                // 带上原状态更新，订单在这期间被支付就不会被误取消
+                if (orderMapper.updateStatusIfMatch(update, Orders.PENDING_PAYMENT) > 0){
+                    handled++;
+                }
+            }
+
+            if (ordersList.size() < BATCH_SIZE){
+                break;
             }
         }
+
+        log.info("超时订单处理完成，自动取消 {} 笔", handled);
     }
 
     /**
@@ -48,14 +69,32 @@ public class OrderTask {
     public void processDeliveryOrders(){
         log.info("处理处于派送中的订单：{}", LocalDateTime.now());
 
-        List<Orders> ordersList = orderMapper.getByStatusAudOrderTimeLT(Orders.DELIVERY_IN_PROGRESS, LocalDateTime.now().plusMinutes(-60));
+        LocalDateTime deadline = LocalDateTime.now().plusMinutes(-60);
+        int handled = 0;
 
-        if(ordersList != null && ordersList.size() > 0){
+        while (true){
+            List<Orders> ordersList = orderMapper.getByStatusAudOrderTimeLT(Orders.DELIVERY_IN_PROGRESS, deadline, BATCH_SIZE);
+            if (ordersList == null || ordersList.isEmpty()){
+                break;
+            }
+
             for (Orders orders : ordersList){
-                orders.setStatus(Orders.COMPLETED);
-                orders.setDeliveryTime(LocalDateTime.now());
-                orderMapper.update(orders);
+                Orders update = Orders.builder()
+                        .id(orders.getId())
+                        .status(Orders.COMPLETED)
+                        .deliveryTime(LocalDateTime.now())
+                        .build();
+
+                if (orderMapper.updateStatusIfMatch(update, Orders.DELIVERY_IN_PROGRESS) > 0){
+                    handled++;
+                }
+            }
+
+            if (ordersList.size() < BATCH_SIZE){
+                break;
             }
         }
+
+        log.info("派送中订单处理完成，自动完成 {} 笔", handled);
     }
 }
