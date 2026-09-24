@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.RequirePermission;
 import com.sky.result.Result;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
@@ -31,6 +32,7 @@ public class ReportController {
      * @param end
      * @return
      */
+    @RequirePermission("report:query")
     @GetMapping("/turnoverStatistics")
     public Result<TurnoverReportVO> turnoverStatistics(
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
@@ -45,6 +47,7 @@ public class ReportController {
      * @param end
      * @return
      */
+    @RequirePermission("report:query")
     @GetMapping("/userStatistics")
     public Result<UserReportVO> userStatistics(
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
@@ -59,6 +62,7 @@ public class ReportController {
      * @param end
      * @return
      */
+    @RequirePermission("report:query")
     @GetMapping("/ordersStatistics")
     public Result<OrderReportVO> ordersStatistics(
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
@@ -73,6 +77,7 @@ public class ReportController {
      * @param end
      * @return
      */
+    @RequirePermission("report:query")
     @GetMapping("/top10")
     public Result<SalesTop10ReportVO> top10(
             @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate begin,
@@ -85,6 +90,7 @@ public class ReportController {
      * 导出运营数据表
      * @param response
      */
+    @RequirePermission("report:export")
     @GetMapping("/export")
     public void export(HttpServletResponse response){
         reportService.exportBusinessData(response);

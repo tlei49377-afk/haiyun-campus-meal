@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.RequirePermission;
 import com.sky.constant.JwtClaimsConstant;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
@@ -80,6 +81,7 @@ public class EmployeeController {
      * @param employeeDTO
      * @return
      */
+    @RequirePermission("employee:add")
     @PostMapping
     public Result save(@RequestBody EmployeeDTO employeeDTO){
         log.info("新增员工，员工数据：{}", employeeDTO);
@@ -92,6 +94,7 @@ public class EmployeeController {
      * @param employeePageQueryDTO
      * @return
      */
+    @RequirePermission("employee:query")
     @GetMapping("/page")
     public Result<PageResult> page(EmployeePageQueryDTO employeePageQueryDTO){
         log.info("分页查询，参数为：{}", employeePageQueryDTO);
@@ -104,6 +107,7 @@ public class EmployeeController {
      * @param status
      * @param id
      */
+    @RequirePermission("employee:status")
     @PostMapping("/status/{status}")
     public Result startOrStop(@PathVariable Integer status, Long id){
         log.info("员工状态：{}，员工id：{}, 启用or禁用员工账号", status, id);
@@ -116,6 +120,7 @@ public class EmployeeController {
      * @param id
      * @return
      */
+    @RequirePermission("employee:query")
     @GetMapping("/{id}")
     public Result<Employee> getById(@PathVariable Long id){
         log.info("根据id查询员工信息，员工id为{}", id);
@@ -128,6 +133,7 @@ public class EmployeeController {
      * @param employeeDTO
      * @return
      */
+    @RequirePermission("employee:update")
     @PutMapping
     public Result update(@RequestBody EmployeeDTO employeeDTO){
         log.info("编辑员工信息：{}", employeeDTO);

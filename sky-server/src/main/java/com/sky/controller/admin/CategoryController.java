@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.RequirePermission;
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
@@ -30,6 +31,7 @@ public class CategoryController {
      * @param categoryDTO
      * @return
      */
+    @RequirePermission("category:add")
     @PostMapping
     @Operation(summary = "新增分类")
     public Result<String> save(@RequestBody CategoryDTO categoryDTO){
@@ -43,6 +45,7 @@ public class CategoryController {
      * @param categoryPageQueryDTO
      * @return
      */
+    @RequirePermission("category:query")
     @GetMapping("/page")
     @Operation(summary = "分类分页查询")
     public Result<PageResult> page(CategoryPageQueryDTO categoryPageQueryDTO){
@@ -56,6 +59,7 @@ public class CategoryController {
      * @param id
      * @return
      */
+    @RequirePermission("category:delete")
     @DeleteMapping
     @Operation(summary = "删除分类")
     public Result<String> deleteById(Long id){
@@ -69,6 +73,7 @@ public class CategoryController {
      * @param categoryDTO
      * @return
      */
+    @RequirePermission("category:update")
     @PutMapping
     @Operation(summary = "修改分类")
     public Result<String> update(@RequestBody CategoryDTO categoryDTO){
@@ -82,6 +87,7 @@ public class CategoryController {
      * @param id
      * @return
      */
+    @RequirePermission("category:status")
     @PostMapping("/status/{status}")
     @Operation(summary = "启用禁用分类")
     public Result<String> startOrStop(@PathVariable("status") Integer status, Long id){
@@ -94,6 +100,7 @@ public class CategoryController {
      * @param type
      * @return
      */
+    @RequirePermission("category:query")
     @GetMapping("/list")
     @Operation(summary = "根据类型查询分类")
     public Result<List<Category>> list(Integer type){

@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.RequirePermission;
 import com.sky.dto.OrdersCancelDTO;
 import com.sky.dto.OrdersConfirmDTO;
 import com.sky.dto.OrdersPageQueryDTO;
@@ -27,6 +28,7 @@ public class OrderController {
      * @param ordersPageQueryDTO
      * @return
      */
+    @RequirePermission("order:query")
     @GetMapping("/conditionSearch")
     public Result<PageResult> conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO){
         log.info("条件搜索订单：{}", ordersPageQueryDTO);
@@ -38,6 +40,7 @@ public class OrderController {
      * 各个状态的订单数量统计
      * @return
      */
+    @RequirePermission("order:statistics")
     @GetMapping("/statistics")
     public Result<OrderStatisticsVO> statistics(){
         log.info("订单统计");
@@ -50,6 +53,7 @@ public class OrderController {
      * @param id
      * @return
      */
+    @RequirePermission("order:query")
     @GetMapping("/details/{id}")
     public Result<OrderVO> details(@PathVariable("id") Long id){
         log.info("订单详情，订单id为{}", id);
@@ -62,6 +66,7 @@ public class OrderController {
      * @param orderConfirmDTO
      * @return
      */
+    @RequirePermission("order:handle")
     @PutMapping("/confirm")
     public Result confirm(@RequestBody OrdersConfirmDTO orderConfirmDTO){
         log.info("接单,{}", orderConfirmDTO);
@@ -74,6 +79,7 @@ public class OrderController {
      * @param ordersRejectionDTO
      * @return
      */
+    @RequirePermission("order:handle")
     @PutMapping("/rejection")
     public Result rejection(@RequestBody OrdersRejectionDTO ordersRejectionDTO) throws Exception {
         log.info("拒单{}", ordersRejectionDTO);
@@ -86,6 +92,7 @@ public class OrderController {
      * @param ordersCancelDTO
      * @return
      */
+    @RequirePermission("order:cancel")
     @PutMapping("/cancel")
     public Result cancel(@RequestBody OrdersCancelDTO ordersCancelDTO) throws Exception {
         log.info("取消订单{}", ordersCancelDTO);
@@ -97,6 +104,7 @@ public class OrderController {
      * 派送订单
      * @param id
      */
+    @RequirePermission("order:handle")
     @PutMapping("/delivery/{id}")
     public Result delivery(@PathVariable("id") Long id){
         log.info("派送订单");
@@ -108,6 +116,7 @@ public class OrderController {
      * 完成订单
      * @param id
      */
+    @RequirePermission("order:handle")
     @PutMapping("/complete/{id}")
     public Result complete(@PathVariable("id") Long id){
         log.info("完成订单");

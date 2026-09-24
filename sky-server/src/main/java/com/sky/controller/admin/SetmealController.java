@@ -2,6 +2,7 @@ package com.sky.controller.admin;
 
 
 import com.github.pagehelper.PageHelper;
+import com.sky.annotation.RequirePermission;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.result.PageResult;
@@ -28,6 +29,7 @@ public class SetmealController {
      * @param setmealDTO
      * @return
      */
+    @RequirePermission("setmeal:add")
     @PostMapping
     @CacheEvict(cacheNames = "setmealCache", key = "#setmealDTO.categoryId") //精确清理
     public Result save(@RequestBody SetmealDTO setmealDTO){
@@ -41,6 +43,7 @@ public class SetmealController {
      * @param setmealPageQueryDTO
      * @return
      */
+    @RequirePermission("setmeal:query")
     @GetMapping("/page")
     public Result<PageResult> page(SetmealPageQueryDTO setmealPageQueryDTO){
         log.info("分页查询：{}", setmealPageQueryDTO);
@@ -53,6 +56,7 @@ public class SetmealController {
      * @param ids
      * @return
      */
+    @RequirePermission("setmeal:delete")
     @DeleteMapping
     @CacheEvict(cacheNames = "setmealCache", allEntries = true) //全部清理
     public Result delete(@RequestParam List<Long> ids){
@@ -66,6 +70,7 @@ public class SetmealController {
      * @param id
      * @return
      */
+    @RequirePermission("setmeal:query")
     @GetMapping("/{id}")
     public Result<SetmealVO> getById(@PathVariable Long id){
         log.info("查询id为{}的套餐信息", id);
@@ -78,6 +83,7 @@ public class SetmealController {
      * @param setmealDTO
      * @return
      */
+    @RequirePermission("setmeal:update")
     @PutMapping
     @CacheEvict(cacheNames = "setmealCache", allEntries = true)
     public Result update(@RequestBody SetmealDTO setmealDTO){
@@ -92,6 +98,7 @@ public class SetmealController {
      * @param id
      * @return
      */
+    @RequirePermission("setmeal:status")
     @PostMapping("/status/{status}")
     @CacheEvict(cacheNames = "setmealCache", allEntries = true)
     public Result startOrStop(@PathVariable Integer status, Long id){

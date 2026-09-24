@@ -1,5 +1,6 @@
 package com.sky.controller.admin;
 
+import com.sky.annotation.RequirePermission;
 import com.sky.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ public class ShopController {
      * @param status
      * @return
      */
+    @RequirePermission("shop:status")
     @PutMapping("/{status}")
     public Result get(@PathVariable Integer status) {
         log.info("设置店铺营业状态：{}", status == 1 ? "营业中" : "打烊中");
