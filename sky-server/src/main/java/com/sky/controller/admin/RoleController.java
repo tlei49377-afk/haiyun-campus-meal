@@ -1,6 +1,7 @@
 package com.sky.controller.admin;
 
 import com.sky.annotation.RequirePermission;
+import com.sky.dto.RoleDTO;
 import com.sky.dto.RolePermissionDTO;
 import com.sky.entity.Role;
 import com.sky.result.Result;
@@ -32,6 +33,19 @@ public class RoleController {
     @GetMapping("/list")
     public Result<List<Role>> list() {
         return Result.success(roleService.list());
+    }
+
+    /**
+     * 新增角色
+     * @param roleDTO
+     * @return
+     */
+    @RequirePermission("role:assign")
+    @PostMapping
+    public Result<String> create(@RequestBody RoleDTO roleDTO) {
+        log.info("新增角色：{}", roleDTO);
+        roleService.createRole(roleDTO);
+        return Result.success();
     }
 
     /**

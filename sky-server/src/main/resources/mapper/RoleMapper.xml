@@ -7,6 +7,15 @@
         select * from `role` order by id
     </select>
 
+    <select id="getByCode" resultType="com.sky.entity.Role">
+        select * from `role` where code = #{code}
+    </select>
+
+    <insert id="insertRole">
+        insert into `role` (code, name, description, create_time, update_time, create_user, update_user)
+        values (#{code}, #{name}, #{description}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})
+    </insert>
+
     <select id="listPermissionIdsByRoleId" resultType="java.lang.Long">
         select permission_id from role_permission where role_id = #{roleId}
     </select>
@@ -40,5 +49,23 @@
             (#{employeeId}, #{roleId})
         </foreach>
     </insert>
+
+    <select id="listEmployeeRoles" resultType="com.sky.vo.EmployeeRoleVO">
+        select er.employee_id, r.id role_id, r.code, r.name
+        from employee_role er
+        join `role` r on r.id = er.role_id
+        where er.employee_id in
+        <foreach collection="employeeIds" item="employeeId" open="(" separator="," close=")">
+            #{employeeId}
+        </foreach>
+        order by er.employee_id, r.id
+    </select>
+
+    <select id="countAdminRole" resultType="int">
+        select count(*)
+        from employee_role er
+        join `role` r on r.id = er.role_id
+        where er.employee_id = #{employeeId} and r.code = 'ADMIN'
+    </select>
 
 </mapper>

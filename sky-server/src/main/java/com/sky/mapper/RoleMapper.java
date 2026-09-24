@@ -1,6 +1,9 @@
 package com.sky.mapper;
 
+import com.sky.annotation.AutoFill;
 import com.sky.entity.Role;
+import com.sky.enumeration.OperationType;
+import com.sky.vo.EmployeeRoleVO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -13,6 +16,20 @@ public interface RoleMapper {
      * @return
      */
     List<Role> list();
+
+    /**
+     * 根据角色编码查询角色
+     * @param code
+     * @return
+     */
+    Role getByCode(String code);
+
+    /**
+     * 新增角色
+     * @param role
+     */
+    @AutoFill(value = OperationType.INSERT)
+    void insertRole(Role role);
 
     /**
      * 查询角色已分配的权限id
@@ -60,4 +77,18 @@ public interface RoleMapper {
      * @param roleIds
      */
     void insertEmployeeRole(Long employeeId, List<Long> roleIds);
+
+    /**
+     * 查询一批员工的角色
+     * @param employeeIds
+     * @return
+     */
+    List<EmployeeRoleVO> listEmployeeRoles(List<Long> employeeIds);
+
+    /**
+     * 统计员工是否拥有超级管理员角色
+     * @param employeeId
+     * @return
+     */
+    int countAdminRole(Long employeeId);
 }

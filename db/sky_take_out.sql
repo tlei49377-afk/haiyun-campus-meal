@@ -173,7 +173,7 @@ CREATE TABLE `employee` (
   `update_user` bigint DEFAULT NULL COMMENT '修改人',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin COMMENT='员工信息';
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin COMMENT='员工信息';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -182,7 +182,7 @@ CREATE TABLE `employee` (
 
 LOCK TABLES `employee` WRITE;
 /*!40000 ALTER TABLE `employee` DISABLE KEYS */;
-INSERT INTO `employee` VALUES (1,'管理员','admin','e10adc3949ba59abbe56e057f20f883e','13812312312','1','110101199001010047',1,'2022-02-15 15:51:20','2022-02-17 09:16:20',10,1),(3,'李四','lisi','e10adc3949ba59abbe56e057f20f883e','15012378952','0','440102566253154879',1,'2026-04-08 12:30:28','2026-04-09 09:23:42',10,10),(10,'黎静','liming','e10adc3949ba59abbe56e057f20f883e','18164688413','0','110101199001010048',1,'2026-04-08 14:11:08','2026-04-14 01:31:00',1,1);
+INSERT INTO `employee` VALUES (1,'管理员','admin','e10adc3949ba59abbe56e057f20f883e','13812312312','1','110101199001010047',1,'2022-02-15 15:51:20','2022-02-17 09:16:20',10,1),(3,'李四','lisi','e10adc3949ba59abbe56e057f20f883e','15012378952','0','440102566253154879',1,'2026-04-08 12:30:28','2026-04-09 09:23:42',10,10),(10,'黎静','liming','e10adc3949ba59abbe56e057f20f883e','18164688413','0','110101199001010048',1,'2026-04-08 14:11:08','2026-04-14 01:31:00',1,1),(11,'张三','zhangsan','e10adc3949ba59abbe56e057f20f883e','13800000011','1','110101199003071234',1,'2026-09-24 09:30:00','2026-09-24 09:30:00',1,1),(12,'王五','wangwu','e10adc3949ba59abbe56e057f20f883e','13800000012','1','110101199105161234',1,'2026-09-24 09:31:00','2026-09-24 09:31:00',1,1),(13,'赵六','zhaoliu','e10adc3949ba59abbe56e057f20f883e','13800000013','0','110101199207231245',1,'2026-09-24 09:32:00','2026-09-24 09:32:00',1,1),(14,'孙七','sunqi','e10adc3949ba59abbe56e057f20f883e','13800000014','0','110101199311081236',1,'2026-09-24 09:33:00','2026-09-24 09:33:00',1,1);
 /*!40000 ALTER TABLE `employee` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -199,7 +199,7 @@ CREATE TABLE `employee_role` (
   `role_id` bigint NOT NULL COMMENT '角色id',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_emp_role` (`employee_id`,`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='员工-角色关联';
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='员工-角色关联';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -208,7 +208,7 @@ CREATE TABLE `employee_role` (
 
 LOCK TABLES `employee_role` WRITE;
 /*!40000 ALTER TABLE `employee_role` DISABLE KEYS */;
-INSERT INTO `employee_role` VALUES (1,1,1),(2,3,2),(3,10,3);
+INSERT INTO `employee_role` VALUES (1,1,1),(2,3,2),(3,10,3),(7,11,4),(8,12,5),(9,13,6),(10,14,2),(11,14,3);
 /*!40000 ALTER TABLE `employee_role` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -364,7 +364,7 @@ CREATE TABLE `role` (
   `update_user` bigint DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -373,7 +373,7 @@ CREATE TABLE `role` (
 
 LOCK TABLES `role` WRITE;
 /*!40000 ALTER TABLE `role` DISABLE KEYS */;
-INSERT INTO `role` VALUES (1,'ADMIN','超级管理员','拥有全部权限',NULL,NULL,NULL,NULL),(2,'OPERATOR','运营','菜品/分类/套餐的日常维护',NULL,NULL,NULL,NULL),(3,'FINANCE','财务','订单查询与报表导出',NULL,NULL,NULL,NULL);
+INSERT INTO `role` VALUES (1,'ADMIN','超级管理员','拥有全部权限',NULL,NULL,NULL,NULL),(2,'OPERATOR','运营','菜品/分类/套餐的日常维护',NULL,NULL,NULL,NULL),(3,'FINANCE','财务','订单查询与报表导出',NULL,NULL,NULL,NULL),(4,'KITCHEN','后厨','套餐制作与订单处理',NULL,NULL,NULL,NULL),(5,'CUSTOMER_SERVICE','客服','订单查询与处理',NULL,NULL,NULL,NULL),(6,'AUDITOR','审计','订单与报表只读',NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `role` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -390,7 +390,7 @@ CREATE TABLE `role_permission` (
   `permission_id` bigint NOT NULL COMMENT '权限id',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_role_perm` (`role_id`,`permission_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色-权限关联';
+) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色-权限关联';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -399,7 +399,7 @@ CREATE TABLE `role_permission` (
 
 LOCK TABLES `role_permission` WRITE;
 /*!40000 ALTER TABLE `role_permission` DISABLE KEYS */;
-INSERT INTO `role_permission` VALUES (8,1,1),(6,1,2),(10,1,3),(7,1,4),(9,1,5),(3,1,6),(1,1,7),(5,1,8),(2,1,9),(4,1,10),(16,1,11),(14,1,12),(18,1,13),(15,1,14),(17,1,15),(11,1,16),(12,1,17),(13,1,18),(39,2,1),(37,2,2),(41,2,3),(38,2,4),(40,2,5),(34,2,6),(32,2,7),(36,2,8),(33,2,9),(35,2,10),(44,2,11),(42,2,12),(46,2,13),(43,2,14),(45,2,15),(47,3,16),(48,3,17),(49,3,18),(50,1,19),(51,1,20),(52,1,21),(53,1,22),(54,1,23),(55,1,24),(56,1,25),(57,1,26),(58,2,16),(59,2,19),(60,2,20),(61,3,25),(62,1,27),(63,1,28);
+INSERT INTO `role_permission` VALUES (8,1,1),(6,1,2),(10,1,3),(7,1,4),(9,1,5),(3,1,6),(1,1,7),(5,1,8),(2,1,9),(4,1,10),(16,1,11),(14,1,12),(18,1,13),(15,1,14),(17,1,15),(11,1,16),(12,1,17),(13,1,18),(39,2,1),(37,2,2),(41,2,3),(38,2,4),(40,2,5),(34,2,6),(32,2,7),(36,2,8),(33,2,9),(35,2,10),(44,2,11),(42,2,12),(46,2,13),(43,2,14),(45,2,15),(47,3,16),(48,3,17),(49,3,18),(50,1,19),(51,1,20),(52,1,21),(53,1,22),(54,1,23),(55,1,24),(56,1,25),(57,1,26),(58,2,16),(59,2,19),(60,2,20),(61,3,25),(62,1,27),(63,1,28),(64,4,11),(65,4,12),(66,4,13),(67,4,14),(68,4,15),(69,4,16),(70,4,19),(71,5,16),(72,5,19),(73,5,20),(74,5,25),(75,6,16),(76,6,17),(77,6,18),(78,6,25);
 /*!40000 ALTER TABLE `role_permission` ENABLE KEYS */;
 UNLOCK TABLES;
 

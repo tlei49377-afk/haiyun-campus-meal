@@ -21,7 +21,7 @@
         select * from employee
         <where>
             <if test="name != null and name != ''">
-                name like concat('%',#{name},'%')
+                (name like concat('%',#{name},'%') or username like concat('%',#{name},'%'))
             </if>
         </where>
         order by create_time desc

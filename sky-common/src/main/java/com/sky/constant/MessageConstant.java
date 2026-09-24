@@ -26,5 +26,11 @@ public class MessageConstant {
     public static final String ORDER_NOT_FOUND = "订单不存在";
     public static final String PARAM_ERROR = "参数校验失败";
     public static final String NO_PERMISSION = "没有权限";
+    public static final String USERNAME_EXISTS = "用户名已存在";
+    public static final String ROLE_CODE_EXISTS = "角色编码已存在";
+    public static final String SELF_ROLE_EDIT_FAILED = "不能修改自己的角色";
+    public static final String ADMIN_ROLE_EDIT_FAILED = "超级管理员的角色不允许被修改";
+    public static final String ADMIN_EMPLOYEE_UPDATE_FAILED = "超级管理员信息不允许被修改";
+    public static final String ADMIN_EMPLOYEE_DISABLE_FAILED = "超级管理员账号不允许被禁用";
 
 }
