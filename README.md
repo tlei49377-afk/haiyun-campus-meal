@@ -142,7 +142,7 @@ mysql -uroot -p < db/sky_take_out.sql
 mysql -uroot -p -e "source db/sky_take_out.sql"
 ```
 
-导入后应是 11 张表，其中 10 个分类、25 道菜品、2 个套餐。默认管理员账号：`admin` / `123456`。
+导入后应是 15 张表（11 张业务表 + 4 张权限表），其中 10 个分类、25 道菜品、2 个套餐。默认管理员账号：`admin` / `123456`。
 
 ### 2. 配置后端
 
