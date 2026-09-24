@@ -40,7 +40,7 @@ public class PermissionServiceImpl implements PermissionService {
             return JSON.parseArray(json, String.class);
         }
 
-        log.debug("权限缓存未命中，查询数据库：employeeId={}", employeeId);
+        log.info("权限缓存未命中，查询数据库：employeeId={}", employeeId);
         List<String> codes = permissionMapper.listCodesByEmployeeId(employeeId);
         // 查不到也缓存空列表，防止每次请求都打库
         redisTemplate.opsForValue().set(key, JSON.toJSONString(codes), CACHE_TTL);
