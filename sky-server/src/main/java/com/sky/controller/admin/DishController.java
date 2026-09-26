@@ -94,6 +94,7 @@ public class DishController {
      * @param dishDTO
      * @return
      */
+    @RequirePermission("dish:update")
     @PutMapping
     public Result update(@RequestBody DishDTO dishDTO){
         log.info("编辑菜品：{}", dishDTO);
