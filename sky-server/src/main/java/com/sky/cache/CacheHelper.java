@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sky.constant.CacheConstant;
 import com.sky.json.JacksonObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.Cursor;
@@ -28,8 +29,14 @@ public class CacheHelper {
 
     private static final ObjectMapper objectMapper = new JacksonObjectMapper();
 
+    //缓存命中率的指标名
+    private static final String METRIC_NAME = "sky.cache.requests";
+
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Autowired
+    private MeterRegistry meterRegistry;
 
     /**
      * 先读缓存，读不到再查库并写回缓存
@@ -42,8 +49,11 @@ public class CacheHelper {
     public <T> T getOrLoad(String key, TypeReference<T> type, Duration ttl, Supplier<T> loader) {
         String json = redisTemplate.opsForValue().get(key);
         if (json != null) {
+            count(key, "hit");
             return parse(json, type);
         }
+
+        count(key, "miss");
 
         // 热点 key 失效时只放一个请求去查库，其他的等它把缓存写好
         String lockKey = key + CacheConstant.LOCK_SUFFIX;
@@ -53,6 +63,7 @@ public class CacheHelper {
                 sleep(CacheConstant.LOCK_WAIT_MILLIS);
                 json = redisTemplate.opsForValue().get(key);
                 if (json != null) {
+                    count(key, "hit");
                     return parse(json, type);
                 }
             }
@@ -61,6 +72,7 @@ public class CacheHelper {
         }
 
         try {
+            count(key, "load");
             T value = loader.get();
             write(key, value, ttl);
             return value;
@@ -96,6 +108,13 @@ public class CacheHelper {
 
     private boolean isEmpty(Object value) {
         return value == null || (value instanceof Collection && ((Collection<?>) value).isEmpty());
+    }
+
+    // 按 key 前缀区分是哪个缓存，统计命中、未命中与回源次数
+    private void count(String key, String result) {
+        int index = key.indexOf('_');
+        String cache = index > 0 ? key.substring(0, index) : key;
+        meterRegistry.counter(METRIC_NAME, "cache", cache, "result", result).increment();
     }
 
     private String toJson(Object value) {

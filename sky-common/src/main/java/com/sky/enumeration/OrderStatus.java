@@ -87,6 +87,10 @@ public enum OrderStatus {
      * @return
      */
     public static boolean canTransfer(Integer from, Integer to) {
+        // Set.of 建的集合不接受 null，先挡掉，避免空状态直接抛 NPE
+        if (from == null || to == null) {
+            return false;
+        }
         Set<Integer> allowed = TRANSITIONS.get(from);
         return allowed != null && allowed.contains(to);
     }

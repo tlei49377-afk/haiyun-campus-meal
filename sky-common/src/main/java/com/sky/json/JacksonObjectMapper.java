@@ -2,7 +2,9 @@ package com.sky.json;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
@@ -46,6 +48,9 @@ public class JacksonObjectMapper extends ObjectMapper {
                 .addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern(DEFAULT_TIME_FORMAT)));
 
         //注册功能模块 例如，可以添加自定义序列化器和反序列化器
+        //先注册 JavaTimeModule，补上 Instant 等类型；再注册下面的模块，日期格式以自定义的为准
+        this.registerModule(new JavaTimeModule());
+        this.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         this.registerModule(simpleModule);
     }
 }

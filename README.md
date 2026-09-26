@@ -15,6 +15,8 @@
 - [配置说明](#配置说明)
 - [性能优化](#性能优化)
 - [缓存设计](#缓存设计)
+- [可观测性](#可观测性)
+- [测试](#测试)
 - [AI 助手](#ai-助手)
   - [实现方式](#实现方式)
   - [工具清单](#工具清单)
@@ -387,11 +389,9 @@ server {
 
 后两行是低选择率的聚合，要算的行占了整表的两成到全部，优化器依旧倾向于全表扫（用户统计后来改走了 index skip scan，营业额统计的计划没变），实测差值落在抖动范围内，不算收益。索引只影响执行计划、不改变结果集：对上面 13 条查询用 `IGNORE INDEX` 强制回退全表扫，结果集校验和逐条一致。
 
-### 两个值得记的结论
+索引不是建了就快，得让过滤条件真的用上。订单分页的条件是 `status = ? and order_time between ? and ?`，只给 `order_time` 建单列索引的实测是 24.3ms：优化器按时间范围先捞出 17536 行，再逐行回表判断 `status`，才凑够一页的 10 条。换成 `(status, order_time)` 后两个条件都被下推进索引（执行计划里的 index condition），降到 0.10ms。同一个 5 万数据下，无索引是 33.6ms、单列索引 24.3ms、复合索引 0.10ms，差别就在过滤条件有没有真正用上索引。
 
-**复合索引的列顺序要跟查询条件对齐。** 订单分页的条件是 `status = ? and order_time between ? and ?`，只给 `order_time` 建单列索引的实测是 24.3ms：优化器按时间范围先捞出 17536 行，再逐行回表判断 `status`，才凑够一页的 10 条。换成 `(status, order_time)` 后两个条件都被下推进索引（执行计划里的 index condition），降到 0.10ms。同一个 5 万数据下，无索引是 33.6ms、单列索引 24.3ms、复合索引 0.10ms —— 索引不是建了就快，得让过滤条件真的用上。
-
-**`like '%关键词%'` 用不上索引。** 订单号、手机号是前后都带通配的模糊搜索，走不了 B+ 树，加索引前后都是同一个全表扫计划（10~50ms，取决于当次扫描的快慢，跟索引无关）。这类搜索得换思路（前缀匹配、全文索引或独立搜索引擎），当前保持原样。
+订单号和手机号是前后都带通配的 `like '%关键词%'`，走不了 B+ 树，加索引前后都是同一个全表扫计划（10~50ms，取决于当次扫描的快慢，跟索引无关）。这类搜索得换思路（前缀匹配、全文索引或独立搜索引擎），当前保持原样。
 
 复现方式：`mysql -uroot -p -e "source db/migration/V6__index.sql"` 建索引；想看优化前的计划就先 `ALTER TABLE ... DROP INDEX` 掉对应索引，`ANALYZE TABLE` 之后用 `EXPLAIN ANALYZE` 跑同一条 SQL 对比。
 
@@ -399,7 +399,7 @@ server {
 
 ## 缓存设计
 
-Redis 在里面有两种角色，得分开看：**缓存**的数据在数据库里，Redis 只是加速；**主存**的数据只有 Redis 有。给主存加过期时间等于丢数据。
+Redis 在里面有两种角色，得分开看：**缓存**的数据在数据库里，Redis 只是加速；**主存**的数据只有 Redis 有。给主存加过期时间等于丢数据。`SHOP_STATUS` 就属于主存这一类，所以它不设过期时间。
 
 | Key | 内容 | 角色 | TTL | 清理时机 |
 |---|---|---|---|---|
@@ -407,7 +407,7 @@ Redis 在里面有两种角色，得分开看：**缓存**的数据在数据库�
 | `dish_{分类id}`（空结果） | 空列表 | 缓存 | 2 分钟 | 同上 |
 | `setmealCache::{分类id}` | 该分类下起售中的套餐 | 缓存 | 30 分钟 ±10% | 套餐新增/编辑/删除/起售停售 |
 | `perm:emp:{员工id}` | 员工的权限码 | 缓存 | 30 分钟 | 改角色或改角色权限 |
-| `SHOP_STATUS` | 店铺营业状态 | **主存** | 不过期 | 管理端修改 |
+| `SHOP_STATUS` | 店铺营业状态 | **主存** | 不过期 | 管理端修改；服务启动时发现缺失就补一个「营业中」兜底 |
 
 ### 穿透：空结果也缓存，但 TTL 缩到 2 分钟
 
@@ -423,14 +423,71 @@ Redis 在里面有两种角色，得分开看：**缓存**的数据在数据库�
 
 ### 两种写法怎么分工
 
-简单的读缓存用注解，`@Cacheable` 读、`@CacheEvict` 清，现在只有套餐在用；需要互斥重建和空值哨兵的走 `CacheHelper`，也就是菜品。注解方式加不进锁，热点 key 用注解扛不住并发重建，所以菜品那条路单独写。
-
-### 两个注意点
-
-- 套餐缓存的 value 序列化从 JDK 换成了 JSON（redis-cli 里能直接看）。换之前留下的旧缓存是二进制，读出来会报错，升级后清一次 `setmealCache::*` 就行，之后靠 TTL 自然淘汰。
-- `SHOP_STATUS` 保持不过期。它是主存，不是数据库的副本，一旦过期前端就读不到营业状态，所以它不适用上面这套 TTL 规则。
+简单的读缓存用注解，`@Cacheable` 读、`@CacheEvict` 清，现在只有套餐在用；需要互斥重建和空值哨兵的走 `CacheHelper`，也就是菜品。注解方式加不进锁，热点 key 用注解扛不住并发重建，所以菜品那条路单独写。套餐缓存的 value 是 JSON（redis-cli 里能直接看）；早期版本用 JDK 序列化留下的旧值是二进制，读出来会报错，升级后清一次 `setmealCache::*` 就行。
 
 ---
+
+## 可观测性
+
+线上排查主要靠两件事：一个请求的日志能串起来，服务的运行状态能被外部采集。
+
+### traceId 贯穿日志
+
+`TraceIdFilter` 挂在过滤器链最前面（`@Order(HIGHEST_PRECEDENCE)`），每个请求先拿一个 traceId：优先用请求头 `X-Trace-Id`（方便前端或网关透传），没有就生成一个 16 位随机串。traceId 放进 MDC，日志格式里配了 `[%X{traceId:-}]`，所以同一个请求打出来的每一行都带同一个 `[xxx]`，排查时直接 grep 这个值就行；同时通过响应头 `X-Trace-Id` 回给调用方，前端报错时能把这个值贴给后端。请求结束后在 `finally` 里清掉 MDC，避免线程复用时串号；传进来的值超过 64 字符会截断，防止脏数据撑爆日志。
+
+用法：
+
+```bash
+curl -H "X-Trace-Id: my-trace-0001" http://localhost:8080/actuator/health -i
+# 响应头里带回 X-Trace-Id: my-trace-0001
+# 日志里同一个请求的每一行都带 [my-trace-0001]
+```
+
+### Actuator 与 Prometheus
+
+`sky-server` 引入了 `spring-boot-starter-actuator` 和 `micrometer-registry-prometheus`，开放四个端点（线上这些端点只应该对内网开放，或者加一层认证）：
+
+| 端点 | 作用 |
+|---|---|
+| `/actuator/health` | 健康检查，`show-details: always`，能看到 db、redis、diskSpace、ping、ssl 各自的状态 |
+| `/actuator/info` | 构建信息（版本、构建时间、groupId）和 JDK、操作系统版本，由 `spring-boot-maven-plugin` 的 `build-info` goal 生成 |
+| `/actuator/metrics` | 按名字查单个指标，例如 `/actuator/metrics/cache.gets?tag=result:hit` |
+| `/actuator/prometheus` | Prometheus 抓取格式，所有 series 都带 `application=sky-take-out` 标签 |
+
+缓存相关有两组指标，来源不一样，别混在一起看：
+
+- `cache_gets_total{cache,result}`、`cache_puts_total{cache}`：Spring 缓存抽象的统计，命中、未命中、写缓存各多少次。**默认是关的**，`CacheConfiguration` 里用 `RedisCacheWriter.nonLockingRedisCacheWriter(factory).withStatisticsCollector(CacheStatisticsCollector.create())` 打开，否则这几个计数永远是 0。
+- `sky_cache_requests_total{cache,result}`：手写缓存（菜品那条路）自己的计数，`result` 有 `hit`、`miss`、`load` 三种。
+
+### 缓存故障不影响业务
+
+`TolerantCacheErrorHandler` 实现了 Spring 的 `CacheErrorHandler`，在 `CacheConfiguration` 里通过 `CachingConfigurer#errorHandler` 注册。Redis 里存了脏数据、或者 Redis 短暂不可用，读写缓存只会打一条 warn 日志，然后照常查库返回结果，不会把异常抛给调用方。
+
+### 一个和自定义 Jackson 有关的坑
+
+`/actuator/info` 刚打开时返回的是项目自己的 `{"code":0,"msg":"未知错误"}`，日志里能看到 `InvalidDefinitionException: Java 8 date/time type java.time.Instant not supported`。原因是 `build.time` 的类型是 `Instant`，而项目自定义的 `JacksonObjectMapper` 只注册了 `LocalDateTime`、`LocalDate`、`LocalTime` 三个类型的序列化器，没有注册 JSR-310 模块。
+
+修法是先注册 `JavaTimeModule` 补齐 `Instant` 这些类型，再注册自定义模块 —— 后注册的会覆盖先注册的，所以 `yyyy-MM-dd HH:mm` 这套日期格式不受影响。
+
+---
+
+## 测试
+
+单元测试在 `sky-server/src/test`，跑整个套件：
+
+```bash
+mvn test
+```
+
+| 测试类 | 用例数 | 覆盖内容 |
+|---|---|---|
+| `OrderStatusTest` | 6 | 订单状态机：正常流转（待付款→待接单→待派送→派送中→已完成）、派送前可取消、拒绝跳状态和回退、拒绝相同状态与终态、状态码未知或为 null 返回 false、`checkTransfer` 抛业务异常并带上错误提示 |
+| `CacheHelperTest` | 3 | TTL 抖动落在 ±10% 区间内、多次抖动不会得到同一个值、极短 TTL（1ms、9ms）抖动后不为负数 |
+| `TraceIdFilterTest` | 5 | 无请求头时生成 16 位并写回响应头、透传上游传入的值、超长截断到 64 位、空白值按缺失处理、业务链路抛异常时 MDC 也被清掉 |
+
+`HttpClientTest` 是手动调接口用的，标了 `@Disabled`，不参与构建。
+
+顺带说一个测试真抓出来的 bug：`OrderStatus.canTransfer(1, null)` 原本会抛 `NullPointerException` —— `Set.of(...).contains(null)` 直接抛异常，而不是返回 false。现在方法入口先判空返回 false，非法入参不会再变成 500。
 
 ## AI 助手
 
