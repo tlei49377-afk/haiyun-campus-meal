@@ -45,7 +45,8 @@ CREATE TABLE `address_book` (
   `detail` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '详细地址',
   `label` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '标签',
   `is_default` tinyint(1) NOT NULL DEFAULT '0' COMMENT '默认 0 否 1是',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin COMMENT='地址簿';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -137,7 +138,8 @@ CREATE TABLE `dish_flavor` (
   `dish_id` bigint NOT NULL COMMENT '菜品',
   `name` varchar(32) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '口味名称',
   `value` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '口味数据list',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_dish_id` (`dish_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=122 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin COMMENT='菜品口味关系表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -172,7 +174,8 @@ CREATE TABLE `employee` (
   `create_user` bigint DEFAULT NULL COMMENT '创建人',
   `update_user` bigint DEFAULT NULL COMMENT '修改人',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_username` (`username`)
+  UNIQUE KEY `idx_username` (`username`),
+  KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin COMMENT='员工信息';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -198,7 +201,8 @@ CREATE TABLE `employee_role` (
   `employee_id` bigint NOT NULL COMMENT '员工id',
   `role_id` bigint NOT NULL COMMENT '角色id',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_emp_role` (`employee_id`,`role_id`)
+  UNIQUE KEY `uk_emp_role` (`employee_id`,`role_id`),
+  KEY `idx_role_id` (`role_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='员工-角色关联';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -229,7 +233,8 @@ CREATE TABLE `order_detail` (
   `dish_flavor` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '口味',
   `number` int NOT NULL DEFAULT '1' COMMENT '数量',
   `amount` decimal(10,2) NOT NULL COMMENT '金额',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_order_id` (`order_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin COMMENT='订单明细表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -275,7 +280,10 @@ CREATE TABLE `orders` (
   `pack_amount` int DEFAULT NULL COMMENT '打包费',
   `tableware_number` int DEFAULT NULL COMMENT '餐具数量',
   `tableware_status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '餐具数量状态  1按餐量提供  0选择具体数量',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_status_order_time` (`status`,`order_time`),
+  KEY `idx_user_id_order_time` (`user_id`,`order_time`),
+  KEY `idx_order_time_status` (`order_time`,`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin COMMENT='订单表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -451,7 +459,8 @@ CREATE TABLE `setmeal_dish` (
   `name` varchar(32) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL COMMENT '菜品名称 （冗余字段）',
   `price` decimal(10,2) DEFAULT NULL COMMENT '菜品单价（冗余字段）',
   `copies` int DEFAULT NULL COMMENT '菜品份数',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_setmeal_id` (`setmeal_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=120 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin COMMENT='套餐菜品关系';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -483,7 +492,8 @@ CREATE TABLE `shopping_cart` (
   `number` int NOT NULL DEFAULT '1' COMMENT '数量',
   `amount` decimal(10,2) NOT NULL COMMENT '金额',
   `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin COMMENT='购物车';
 /*!40101 SET character_set_client = @saved_cs_client */;
 

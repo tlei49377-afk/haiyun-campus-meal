@@ -13,6 +13,7 @@
 - [环境要求](#环境要求)
 - [快速开始](#快速开始)
 - [配置说明](#配置说明)
+- [性能优化](#性能优化)
 - [AI 助手](#ai-助手)
   - [实现方式](#实现方式)
   - [工具清单](#工具清单)
@@ -336,6 +337,62 @@ server {
 | `chat:session:title:{memoryId}` | String | 会话标题（取自第一条消息前 20 字） | 7 天，随会话续期 |
 
 > 6380 的向量库虽然配置齐全（`contentRetriever` Bean 也已定义），但 `contentRetriever` **没有装配到 `@AiService`**，且负责灌数据的 `store()` Bean 被注释掉了，所以 RAG 检索目前不参与对话。
+>
+> 不过 `redisEmbeddingStore` 是随容器启动创建的，所以**应用启动仍然要求 6380 上跑一个带 RediSearch 模块的 Redis**（`redislabs/redisearch`、Redis Stack 之类）；用普通 Redis 顶替会因为缺少 `FT._LIST` 命令直接启动失败。
+
+---
+
+## 性能优化
+
+### 慢 SQL 与索引
+
+订单、报表相关的几条查询在数据量上来后会退化成全表扫：订单分页要按「状态 + 下单时间」过滤再倒序取页，报表统计按时间范围聚合，销量 Top10 还要 join 订单明细。
+
+先用递归 CTE 造出 5 万订单、15 万订单明细、3 万购物车/地址、5 千员工的测试数据，靠 `EXPLAIN ANALYZE` 逐条看计划，再按真实查询补索引。索引定义写在 `db/migration/V6__index.sql`（幂等，重复执行会跳过已存在的索引），同时也并进了 `db/sky_take_out.sql` 的建表语句，新库和老库都能对上。
+
+| 表 | 索引 | 对应的查询 |
+|---|---|---|
+| `orders` | `idx_status_order_time` (`status`, `order_time`) | 管理端按状态筛选的订单分页、定时任务扫超时未支付单、带状态的营业额统计 |
+| `orders` | `idx_user_id_order_time` (`user_id`, `order_time`) | 用户端历史订单 |
+| `orders` | `idx_order_time_status` (`order_time`, `status`) | 不带状态的时间范围统计、无过滤的订单列表排序 |
+| `order_detail` | `idx_order_id` (`order_id`) | 订单明细查询、销量 Top10 的 join 驱动 |
+| `dish_flavor` | `idx_dish_id` (`dish_id`) | 菜品口味查询与删除 |
+| `setmeal_dish` | `idx_setmeal_id` (`setmeal_id`) | 套餐菜品查询与删除 |
+| `employee` | `idx_create_time` (`create_time`) | 员工分页按创建时间倒序 |
+| `employee_role` | `idx_role_id` (`role_id`) | 按角色反查员工（改角色权限后失效缓存） |
+| `shopping_cart` | `idx_user_id` (`user_id`) | 购物车查询与清空 |
+| `address_book` | `idx_user_id` (`user_id`) | 地址簿查询 |
+
+### 优化前后对比
+
+数据量 5 万订单 / 15 万明细。每次查询先 `ANALYZE TABLE`，再跑 5 遍取中位数（第 1 遍作为预热丢弃），单位毫秒：
+
+| 查询 | 优化前 | 优化后 |
+|---|---|---|
+| 订单分页（状态 + 时间范围 + 倒序） | 47.7 | 0.10 |
+| 订单列表（按时间倒序，无过滤） | 54.4 | 0.05 |
+| 用户端历史订单 | 35.8 | 0.04 |
+| 订单明细按 `order_id` | 57.2 | 0.01 |
+| 购物车按 `user_id` | 11.3 | 0.02 |
+| 地址簿按 `user_id` | 19.0 | 0.03 |
+| 员工分页按 `create_time` 倒序 | 1.9 | 0.03 |
+| 菜品口味按 `dish_id` | 9.5 | 1.3 |
+| 套餐菜品按 `setmeal_id` | 9.9 | 0.4 |
+| 销量 Top10（join 明细 + 聚合） | 233.5 | 57.9 |
+| 按角色反查员工 | 0.7 | 0.4 |
+| 定时任务扫描超时订单 | 0.8 | 0.3 |
+| 营业额统计（时间范围 + 状态聚合） | 21.3 | 11.8 |
+| 用户统计（时间范围 count） | 24.9 | 19.4 |
+
+后两行是低选择率的聚合，要算的行占了整表的两成到全部，优化器依旧倾向于全表扫（用户统计后来改走了 index skip scan，营业额统计的计划没变），实测差值落在抖动范围内，不算收益。索引只影响执行计划、不改变结果集：对上面 13 条查询用 `IGNORE INDEX` 强制回退全表扫，结果集校验和逐条一致。
+
+### 两个值得记的结论
+
+**复合索引的列顺序要跟查询条件对齐。** 订单分页的条件是 `status = ? and order_time between ? and ?`，只给 `order_time` 建单列索引的实测是 24.3ms：优化器按时间范围先捞出 17536 行，再逐行回表判断 `status`，才凑够一页的 10 条。换成 `(status, order_time)` 后两个条件都被下推进索引（执行计划里的 index condition），降到 0.10ms。同一个 5 万数据下，无索引是 33.6ms、单列索引 24.3ms、复合索引 0.10ms —— 索引不是建了就快，得让过滤条件真的用上。
+
+**`like '%关键词%'` 用不上索引。** 订单号、手机号是前后都带通配的模糊搜索，走不了 B+ 树，加索引前后都是同一个全表扫计划（10~50ms，取决于当次扫描的快慢，跟索引无关）。这类搜索得换思路（前缀匹配、全文索引或独立搜索引擎），当前保持原样。
+
+复现方式：`mysql -uroot -p -e "source db/migration/V6__index.sql"` 建索引；想看优化前的计划就先 `ALTER TABLE ... DROP INDEX` 掉对应索引，`ANALYZE TABLE` 之后用 `EXPLAIN ANALYZE` 跑同一条 SQL 对比。
 
 ---
 
