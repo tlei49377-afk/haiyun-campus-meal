@@ -1,0 +1,122 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: dev
+  datasource:
+    druid:
+      driver-class-name: ${app.datasource.driver-class-name}
+      url: jdbc:mysql://${app.datasource.host}:${app.datasource.port}/${app.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      username: ${app.datasource.username}
+      password: ${app.datasource.password}
+  data:
+    redis:
+      host: ${app.redis.host}
+      port: ${app.redis.port}
+      password: ${app.redis.password}
+      database: ${app.redis.database}
+
+mybatis:
+  #mapper配置文件
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.haiyun.meal.entity
+  configuration:
+    #开启驼峰命名
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com:
+      app:
+        mapper: debug
+        service: info
+        controller: info
+  pattern:
+    # 日志里带上 traceId，方便把一个请求的多行日志串起来
+    correlation: "[%X{traceId:-}] "
+
+management:
+  endpoints:
+    web:
+      exposure:
+        # 只放开需要的几个，生产环境这些端点要挂到内网或加认证
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  info:
+    # 让 /actuator/info 有内容：构建信息、JDK 与操作系统版本
+    build:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+  metrics:
+    tags:
+      application: haiyun-meal
+
+app:
+  jwt:
+    # 设置jwt签名加密时使用的秘钥
+    admin-secret-key: ${SKY_JWT_ADMIN_SECRET}
+    # 设置jwt过期时间
+    admin-ttl: 7200000
+    # 设置前端传递过来的令牌名称
+    admin-token-name: token
+
+    user-secret-key: ${SKY_JWT_USER_SECRET}
+    user-ttl: 7200000
+    user-token-name: authentication
+  alioss:
+    endpoint: ${app.alioss.endpoint}
+    access-key-id: ${app.alioss.access-key-id}
+    access-key-secret: ${app.alioss.access-key-secret}
+    bucket-name: ${app.alioss.bucket-name}
+  wechat:
+    # 商户号（从 sky.wechat.mchid 配置项读取）
+    mchid: ${app.wechat.mchid}
+    # 商户API证书序列号（从 sky.wechat.mchSerialNo 配置项读取）
+    mchSerialNo: ${app.wechat.mchSerialNo}
+    # 商户私钥文件路径（从 sky.wechat.privateKeyFilePath 配置项读取）
+    # privateKeyFilePath: ${app.wechat.privateKeyFilePath}
+    # 微信支付V3 API密钥（从 sky.wechat.apiV3Key 配置项读取）
+    apiV3Key: ${app.wechat.apiV3Key}
+    # 微信支付平台证书文件路径（从 sky.wechat.weChatPayCertFilePath 配置项读取）
+    # weChatPayCertFilePath: ${app.wechat.weChatPayCertFilePath}
+    # 支付成功回调地址（从 sky.wechat.notifyUrl 配置项读取）
+    notifyUrl: ${app.wechat.notifyUrl}
+    # 退款成功回调地址（从 sky.wechat.refundNotifyUrl 配置项读取）
+    refundNotifyUrl: ${app.wechat.refundNotifyUrl}
+  shop:
+    address: ${app.shop.address}
+  baidu:
+    ak: ${app.baidu.ak}
+
+langchain4j:
+  open-ai:
+    chat-model:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      api-key: ${QW-API-KEY}
+      model-name: qwen-plus
+      log-requests: true
+      log-responses: true
+    streaming-chat-model:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      api-key: ${QW-API-KEY}
+      model-name: qwen-plus
+      log-requests: true
+      log-responses: true
+    embedding-model:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      api-key: ${QW-API-KEY}
+      model-name: qwen3.7-text-embedding-flash
+      log-requests: true
+      log-responses: true
+      max-segments-per-batch: 20
+  community:
+    redis:
+      host: localhost
+      port: 6380
+      dimension: 1024
