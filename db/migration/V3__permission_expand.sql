@@ -3,7 +3,7 @@
 -- 依赖 V2 的 role / permission / role_permission 表与初始数据
 -- ============================================================
 
-USE sky_take_out;
+USE haiyun_meal;
 
 INSERT IGNORE INTO permission (code, name) VALUES
 ('order:handle',    '订单处理'),
