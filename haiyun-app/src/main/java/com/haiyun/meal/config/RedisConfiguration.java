@@ -10,10 +10,16 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+/**
+ * Redis 模板配置。
+ */
 @Configuration // 配置类
 @Slf4j
 public class RedisConfiguration {
 
+    /**
+     * 创建 Redis 操作模板。
+     */
     @Bean
     public RedisTemplate redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         log.info("开始创建RedisTemplate对象...");

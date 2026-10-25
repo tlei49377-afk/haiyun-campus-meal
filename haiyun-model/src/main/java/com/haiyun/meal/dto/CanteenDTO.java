@@ -5,6 +5,9 @@ import lombok.Data;
 import java.io.Serializable;
 import java.time.LocalTime;
 
+/**
+ * 食堂请求数据。
+ */
 @Data
 public class CanteenDTO implements Serializable {
     private Long id;

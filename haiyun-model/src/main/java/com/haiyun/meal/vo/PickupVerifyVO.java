@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+/**
+ * 取餐核销视图数据。
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

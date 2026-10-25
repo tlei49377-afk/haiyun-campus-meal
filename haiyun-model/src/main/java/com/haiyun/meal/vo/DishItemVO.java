@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+/**
+ * 菜品明细视图数据。
+ */
 @Data
 @Builder
 @NoArgsConstructor

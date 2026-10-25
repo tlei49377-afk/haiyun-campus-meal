@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
+/**
+ * 学生端菜品查询接口。
+ */
 @RestController("userDishController")
 @RequestMapping("/api/app/dish")
 @Slf4j

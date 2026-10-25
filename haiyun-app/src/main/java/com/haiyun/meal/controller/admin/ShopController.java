@@ -8,6 +8,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.PostConstruct;
 
+/**
+ * 管理端店铺营业状态接口。
+ */
 @RestController("adminshopcontroller") // 响应数据使用 JSON
 @RequestMapping("/api/admin/shop")
 @Slf4j
@@ -19,6 +22,9 @@ public class ShopController {
     private RedisTemplate redisTemplate;
 
     //服务启动时补一个默认的营业状态，Redis 被清空后前端不至于读到 null
+    /**
+     * 初始化店铺营业状态缓存。
+     */
     @PostConstruct
     public void initShopStatus() {
         try {

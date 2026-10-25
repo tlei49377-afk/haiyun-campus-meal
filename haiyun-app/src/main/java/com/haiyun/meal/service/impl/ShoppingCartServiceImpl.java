@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 购物车业务实现。
+ */
 @Service
 @Slf4j
 public class ShoppingCartServiceImpl implements ShoppingCartService {

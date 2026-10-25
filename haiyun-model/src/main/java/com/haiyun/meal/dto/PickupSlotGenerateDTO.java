@@ -7,6 +7,9 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+/**
+ * 取餐时段生成请求数据。
+ */
 @Data
 public class PickupSlotGenerateDTO implements Serializable {
     private Long stallId;

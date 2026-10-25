@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
+/**
+ * 学生端菜品分类查询接口。
+ */
 @RestController("userCategoryController")
 @RequestMapping("/api/app/category")
 public class CategoryController {

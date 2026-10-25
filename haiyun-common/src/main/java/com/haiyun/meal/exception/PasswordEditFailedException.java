@@ -5,6 +5,9 @@ package com.haiyun.meal.exception;
  */
 public class PasswordEditFailedException extends BaseException{
 
+    /**
+     * 使用指定消息创建PasswordEditFailedException。
+     */
     public PasswordEditFailedException(String msg){
         super(msg);
     }

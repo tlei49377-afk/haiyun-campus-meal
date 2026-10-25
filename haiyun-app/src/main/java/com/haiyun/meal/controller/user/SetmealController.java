@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
+/**
+ * 学生端套餐查询接口。
+ */
 @RestController("userSetmealController")
 @RequestMapping("/api/app/setmeal")
 // 套餐浏览接口

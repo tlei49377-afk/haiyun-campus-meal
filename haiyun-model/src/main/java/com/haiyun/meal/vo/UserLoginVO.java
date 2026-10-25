@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+/**
+ * 学生登录视图数据。
+ */
 @Data
 @Builder
 @NoArgsConstructor

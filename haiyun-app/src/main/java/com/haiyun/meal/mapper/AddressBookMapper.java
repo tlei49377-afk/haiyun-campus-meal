@@ -4,6 +4,9 @@ import com.haiyun.meal.entity.AddressBook;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
 
+/**
+ * 地址簿数据访问接口。
+ */
 @Mapper
 public interface AddressBookMapper {
 

@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 员工角色视图数据。
+ */
 @Data
 public class EmployeeRoleVO implements Serializable {
 

@@ -21,6 +21,9 @@ import reactor.core.publisher.Flux;
 )
 public interface ConsultantService {
 
+    /**
+     * 以流式方式返回 AI 点餐顾问回复。
+     */
     @SystemMessage(fromResource = "system.txt")
     Flux<String> chat(@MemoryId String memoryId, @UserMessage String memory);
 }

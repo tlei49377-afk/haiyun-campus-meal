@@ -9,6 +9,9 @@ import com.haiyun.meal.vo.SetmealVO;
 
 import java.util.List;
 
+/**
+ * 套餐业务接口。
+ */
 public interface SetmealService {
 
     /**

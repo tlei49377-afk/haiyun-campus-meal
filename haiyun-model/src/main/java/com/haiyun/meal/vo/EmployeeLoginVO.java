@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * 员工登录视图数据。
+ */
 @Data
 @Builder
 @NoArgsConstructor

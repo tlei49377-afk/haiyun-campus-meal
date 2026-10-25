@@ -8,6 +8,9 @@ import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
+/**
+ * 角色数据访问接口。
+ */
 @Mapper
 public interface RoleMapper {
 

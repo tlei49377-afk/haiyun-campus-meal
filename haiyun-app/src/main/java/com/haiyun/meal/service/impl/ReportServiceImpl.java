@@ -35,6 +35,9 @@ import java.util.stream.Collectors;
 
 import static java.lang.System.in;
 
+/**
+ * 数据报表业务实现。
+ */
 @Service
 @Slf4j
 public class ReportServiceImpl implements ReportService {

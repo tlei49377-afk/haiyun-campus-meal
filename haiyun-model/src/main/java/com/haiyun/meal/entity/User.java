@@ -9,6 +9,9 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * 学生用户实体。
+ */
 @Data
 @Builder
 @NoArgsConstructor

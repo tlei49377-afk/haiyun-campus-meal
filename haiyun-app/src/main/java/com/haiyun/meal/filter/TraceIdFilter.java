@@ -31,6 +31,9 @@ public class TraceIdFilter implements Filter {
     //上游带了 traceId 就用它的，只截前 64 位，防止超长内容把日志撑爆
     private static final int MAX_LENGTH = 64;
 
+    /**
+     * 为请求生成链路追踪 ID 并写入日志上下文。
+     */
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         String traceId = resolveTraceId((HttpServletRequest) request);
         MDC.put(TRACE_ID, traceId);

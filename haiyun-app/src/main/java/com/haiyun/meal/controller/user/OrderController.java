@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 //用户端订单相关接口
+/**
+ * 学生端预约订单接口。
+ */
 @RestController("userOrderController")
 @RequestMapping("/api/app/order")
 @Slf4j

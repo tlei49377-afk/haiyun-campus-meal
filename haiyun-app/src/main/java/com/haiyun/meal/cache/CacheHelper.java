@@ -100,23 +100,35 @@ public class CacheHelper {
         log.info("清理缓存 {} 个，pattern={}", keys.size(), pattern);
     }
 
+    /**
+     * 写入缓存。
+     */
     private <T> void write(String key, T value, Duration ttl) {
         // 空结果说明这个条件确实没数据，缓存一小会儿就够，别把内存占住
         Duration expire = isEmpty(value) ? CacheConstant.EMPTY_TTL : ttl;
         redisTemplate.opsForValue().set(key, toJson(value), withJitter(expire));
     }
 
+    /**
+     * 判断缓存对象是否为空。
+     */
     private boolean isEmpty(Object value) {
         return value == null || (value instanceof Collection && ((Collection<?>) value).isEmpty());
     }
 
     // 按 key 前缀区分是哪个缓存，统计命中、未命中与回源次数
+    /**
+     * 记录缓存命中、未命中和回源次数。
+     */
     private void count(String key, String result) {
         int index = key.indexOf('_');
         String cache = index > 0 ? key.substring(0, index) : key;
         meterRegistry.counter(METRIC_NAME, "cache", cache, "result", result).increment();
     }
 
+    /**
+     * 将对象序列化为 JSON。
+     */
     private String toJson(Object value) {
         try {
             return objectMapper.writeValueAsString(value);
@@ -125,6 +137,9 @@ public class CacheHelper {
         }
     }
 
+    /**
+     * 将 JSON 反序列化为指定类型。
+     */
     private <T> T parse(String json, TypeReference<T> type) {
         try {
             return objectMapper.readValue(json, type);
@@ -145,6 +160,9 @@ public class CacheHelper {
         return Duration.ofMillis(base + offset);
     }
 
+    /**
+     * 短暂休眠。
+     */
     private void sleep(long millis) {
         try {
             Thread.sleep(millis);

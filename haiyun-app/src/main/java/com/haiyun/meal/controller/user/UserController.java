@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 学生端登录接口。
+ */
 @RestController
 @RequestMapping("/api/app/user")
 @Slf4j

@@ -18,6 +18,9 @@ import reactor.core.publisher.Flux;
 
 import java.util.List;
 
+/**
+ * AI 咨询会话管理接口。
+ */
 @RestController
 public class ChatController {
 

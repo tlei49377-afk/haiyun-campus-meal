@@ -15,5 +15,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME) // 表示该注解在运行时生效
 public @interface AutoFill {
     // 数据库操作类型：UPDATE INSERT
+    /**
+     * 指定数据库操作类型。
+     */
     OperationType value();
 }

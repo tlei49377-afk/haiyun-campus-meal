@@ -11,8 +11,14 @@ import java.nio.charset.StandardCharsets;
 public class PasswordService {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
+    /**
+     * 使用 BCrypt 编码原始密码。
+     */
     public String encode(String raw) { return encoder.encode(raw); }
 
+    /**
+     * 校验原始密码，兼容 BCrypt 与历史 MD5 存储。
+     */
     public boolean matches(String raw, String stored) {
         if (raw == null || stored == null) return false;
         if (stored.startsWith("$2a$") || stored.startsWith("$2b$") || stored.startsWith("$2y$")) {
@@ -21,6 +27,9 @@ public class PasswordService {
         return DigestUtils.md5DigestAsHex(raw.getBytes(StandardCharsets.UTF_8)).equalsIgnoreCase(stored);
     }
 
+    /**
+     * 判断密码是否为需要升级的历史 MD5 格式。
+     */
     public boolean isLegacy(String stored) {
         return stored != null && !(stored.startsWith("$2a$") || stored.startsWith("$2b$") || stored.startsWith("$2y$"));
     }

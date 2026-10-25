@@ -6,6 +6,9 @@ import lombok.Data;
 import java.io.Serializable;
 import java.time.LocalTime;
 
+/**
+ * 取餐时段修改请求数据。
+ */
 @Data
 public class PickupSlotUpdateDTO implements Serializable {
     private Long id;

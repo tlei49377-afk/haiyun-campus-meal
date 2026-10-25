@@ -36,6 +36,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * 员工业务实现。
+ */
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 

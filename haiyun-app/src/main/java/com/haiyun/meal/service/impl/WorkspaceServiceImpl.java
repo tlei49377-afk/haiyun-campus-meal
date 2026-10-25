@@ -19,6 +19,9 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 工作台业务实现。
+ */
 @Service
 @Slf4j
 public class WorkspaceServiceImpl implements WorkspaceService {

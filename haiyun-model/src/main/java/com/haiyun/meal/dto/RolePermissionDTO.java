@@ -5,6 +5,9 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * 角色权限请求数据。
+ */
 @Data
 public class RolePermissionDTO implements Serializable {
 

@@ -15,12 +15,18 @@ public class Result<T> implements Serializable {
     private String msg; //错误信息
     private T data; //数据
 
+    /**
+     * 返回不含数据的成功响应。
+     */
     public static <T> Result<T> success() {
         Result<T> result = new Result<T>();
         result.code = 1;
         return result;
     }
 
+    /**
+     * 返回携带数据的成功响应。
+     */
     public static <T> Result<T> success(T object) {
         Result<T> result = new Result<T>();
         result.data = object;
@@ -28,6 +34,9 @@ public class Result<T> implements Serializable {
         return result;
     }
 
+    /**
+     * 返回失败响应。
+     */
     public static <T> Result<T> error(String msg) {
         Result result = new Result();
         result.msg = msg;

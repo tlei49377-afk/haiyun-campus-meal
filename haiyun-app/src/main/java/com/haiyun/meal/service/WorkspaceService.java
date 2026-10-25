@@ -6,6 +6,9 @@ import com.haiyun.meal.vo.OrderOverViewVO;
 import com.haiyun.meal.vo.SetmealOverViewVO;
 import java.time.LocalDateTime;
 
+/**
+ * 工作台业务接口。
+ */
 public interface WorkspaceService {
 
     /**

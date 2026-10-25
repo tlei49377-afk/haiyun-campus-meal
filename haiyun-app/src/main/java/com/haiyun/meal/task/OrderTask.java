@@ -19,16 +19,25 @@ public class OrderTask {
     @Autowired private OrderMapper orderMapper;
     @Autowired private OrderService orderService;
 
+    /**
+     * 扫描并关闭待支付超时订单。
+     */
     @Scheduled(cron = "0 * * * * ?")
     public void processTimeoutOrders() {
         cancelBatch(Orders.PENDING_PAYMENT, LocalDateTime.now().minusMinutes(15), "待支付超时");
     }
 
+    /**
+     * 扫描并关闭待取餐超时订单。
+     */
     @Scheduled(cron = "0 0/10 * * * ?")
     public void processPickupTimeoutOrders() {
         cancelBatch(Orders.READY_FOR_PICKUP, LocalDateTime.now().minusHours(2), "待取餐超时");
     }
 
+    /**
+     * 按批次处理指定状态的超时订单。
+     */
     private void cancelBatch(Integer status, LocalDateTime deadline, String label) {
         int handled = 0;
         while (true) {

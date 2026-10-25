@@ -12,6 +12,9 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 基于 Redis 的 AI 会话记忆存储。
+ */
 @Repository
 public class RedisChatMemoryStore implements ChatMemoryStore {
 
@@ -27,6 +30,9 @@ public class RedisChatMemoryStore implements ChatMemoryStore {
     // 每次写入都会重设 TTL，所以活跃会话会自动续期。
     private static final Duration TTL = Duration.ofDays(7);
 
+    /**
+     * 读取指定会话的历史消息。
+     */
     @Override
     public List<ChatMessage> getMessages(Object memoryId) {
         String json = redisTemplate.opsForValue().get(key(memoryId));
@@ -37,17 +43,26 @@ public class RedisChatMemoryStore implements ChatMemoryStore {
         return ChatMessageDeserializer.messagesFromJson(json);
     }
 
+    /**
+     * 覆盖保存指定会话的历史消息。
+     */
     @Override
     public void updateMessages(Object memoryId, List<ChatMessage> list) {
         String json = ChatMessageSerializer.messagesToJson(list);
         redisTemplate.opsForValue().set(key(memoryId), json, TTL);
     }
 
+    /**
+     * 删除指定会话的历史消息。
+     */
     @Override
     public void deleteMessages(Object memoryId) {
         redisTemplate.delete(key(memoryId));
     }
 
+    /**
+     * 生成带命名空间的 Redis 会话键。
+     */
     private String key(Object memoryId) {
         return MEMORY_KEY_PREFIX + memoryId;
     }

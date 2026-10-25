@@ -10,6 +10,9 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 员工视图数据。
+ */
 @Data
 @Builder
 @NoArgsConstructor

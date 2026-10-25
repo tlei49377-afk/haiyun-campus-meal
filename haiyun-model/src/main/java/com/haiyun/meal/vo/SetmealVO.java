@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 套餐视图数据。
+ */
 @Data
 @Builder
 @NoArgsConstructor

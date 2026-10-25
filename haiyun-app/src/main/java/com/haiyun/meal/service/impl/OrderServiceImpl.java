@@ -34,6 +34,9 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+/**
+ * 订单业务实现。
+ */
 @Service
 @Slf4j
 public class OrderServiceImpl implements OrderService {
@@ -46,6 +49,9 @@ public class OrderServiceImpl implements OrderService {
     @Autowired private StallMapper stallMapper;
     @Autowired private WebSocketServer webSocketServer;
 
+    /**
+     * 校验购物车与取餐时段后创建预约订单。
+     */
     @Override
     @Transactional
     public OrderSubmitVO submitOrder(OrdersSubmitDTO dto) {
@@ -100,6 +106,9 @@ public class OrderServiceImpl implements OrderService {
                 .startTime(slot.getStartTime()).endTime(slot.getEndTime()).build();
     }
 
+    /**
+     * 完成本地演示环境的模拟支付。
+     */
     @Override
     @Transactional
     public OrderPaymentVO payment(OrdersPaymentDTO dto) {
@@ -118,6 +127,9 @@ public class OrderServiceImpl implements OrderService {
         return OrderPaymentVO.builder().packageStr("mock-paid").build();
     }
 
+    /**
+     * 幂等处理支付成功回调。
+     */
     @Override
     @Transactional
     public void paySuccess(String outTradeNo, String transactionId) {
@@ -133,6 +145,9 @@ public class OrderServiceImpl implements OrderService {
         sendOrderEvent(db.getId(), "订单已支付：" + outTradeNo);
     }
 
+    /**
+     * 分页查询当前学生的历史订单。
+     */
     @Override
     public PageResult pageQueryUser(int page, int pageSize, Integer status) {
         PageHelper.startPage(page, pageSize);
@@ -154,6 +169,9 @@ public class OrderServiceImpl implements OrderService {
         return new PageResult(pageOrders.getTotal(), list);
     }
 
+    /**
+     * 查询当前学生拥有的订单详情。
+     */
     @Override
     public OrderVO orderDetail(Long id) {
         Orders order = orderMapper.getById(id);
@@ -163,12 +181,18 @@ public class OrderServiceImpl implements OrderService {
         return buildOrderVO(order);
     }
 
+    /**
+     * 查询管理端订单详情。
+     */
     @Override
     public OrderVO orderDetailForAdmin(Long id) {
         Orders order = requireOrder(id);
         return buildOrderVO(order);
     }
 
+    /**
+     * 组装包含订单明细的订单视图。
+     */
     private OrderVO buildOrderVO(Orders order) {
         OrderVO vo = new OrderVO();
         BeanUtils.copyProperties(order, vo);
@@ -176,6 +200,9 @@ public class OrderServiceImpl implements OrderService {
         return vo;
     }
 
+    /**
+     * 取消当前学生尚未取餐的订单。
+     */
     @Override
     @Transactional
     public void userCancelById(Long id) {
@@ -189,6 +216,9 @@ public class OrderServiceImpl implements OrderService {
         closeOrder(db, db.getStatus().equals(Orders.PENDING_PAYMENT) ? Orders.CANCELLED : Orders.REFUND, "用户取消");
     }
 
+    /**
+     * 将历史订单商品重新加入购物车。
+     */
     @Override
     public void repetition(Long id) {
         Long userId = BaseContext.getCurrentId();
@@ -206,6 +236,9 @@ public class OrderServiceImpl implements OrderService {
         if (!carts.isEmpty()) shoppingCartMapper.insertBatch(carts);
     }
 
+    /**
+     * 按条件分页查询订单。
+     */
     @Override
     public PageResult conditionSearch(OrdersPageQueryDTO dto) {
         PageHelper.startPage(dto.getPage(), dto.getPageSize());
@@ -220,6 +253,9 @@ public class OrderServiceImpl implements OrderService {
         return new PageResult(page.getTotal(), orderVOList);
     }
 
+    /**
+     * 统计待接单、制作中和待取餐订单数量。
+     */
     @Override
     public OrderStatisticsVO statistics() {
         OrderStatisticsVO vo = new OrderStatisticsVO();
@@ -229,11 +265,17 @@ public class OrderServiceImpl implements OrderService {
         return vo;
     }
 
+    /**
+     * 将订单从待接单迁移到制作中。
+     */
     @Override
     public void confirm(OrdersConfirmDTO dto) {
         transition(dto.getId(), Orders.TO_BE_CONFIRMED, Orders.MAKING, null);
     }
 
+    /**
+     * 拒绝订单并释放占用的时段库存。
+     */
     @Override
     @Transactional
     public void rejection(OrdersRejectionDTO dto) {
@@ -242,6 +284,9 @@ public class OrderServiceImpl implements OrderService {
         closeOrder(db, Orders.REFUND, dto.getRejectionReason());
     }
 
+    /**
+     * 管理端取消订单并按规则处理退款。
+     */
     @Override
     @Transactional
     public void cancel(OrdersCancelDTO dto) {
@@ -251,11 +296,17 @@ public class OrderServiceImpl implements OrderService {
         closeOrder(db, target, dto.getCancelReason());
     }
 
+    /**
+     * 将制作中订单迁移为待取餐。
+     */
     @Override
     public void ready(Long id) {
         transition(id, Orders.MAKING, Orders.READY_FOR_PICKUP, LocalDateTime.now());
     }
 
+    /**
+     * 校验并核销待取餐订单。
+     */
     @Override
     @Transactional
     public PickupVerifyVO verifyPickup(PickupVerifyDTO dto) {
@@ -277,6 +328,9 @@ public class OrderServiceImpl implements OrderService {
         return new PickupVerifyVO(db.getId(), db.getNumber(), db.getPickupCode(), Orders.COMPLETED, "核销成功");
     }
 
+    /**
+     * 关闭超时订单并释放时段库存。
+     */
     @Override
     @Transactional
     public void cancelTimeout(Long id) {
@@ -286,12 +340,18 @@ public class OrderServiceImpl implements OrderService {
                 Orders.PENDING_PAYMENT.equals(db.getStatus()) ? "支付超时，自动取消" : "超时未取餐，自动关闭");
     }
 
+    /**
+     * 发送取餐提醒事件。
+     */
     @Override
     public void reminder(Long id) {
         Orders order = requireOrder(id);
         sendOrderEvent(id, "取餐提醒：" + order.getNumber());
     }
 
+    /**
+     * 按状态机规则执行订单状态迁移。
+     */
     private void transition(Long id, Integer expected, Integer target, LocalDateTime stamp) {
         Orders db = requireOrder(id);
         OrderStatus.checkTransfer(db.getStatus(), target);
@@ -302,12 +362,18 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    /**
+     * 查询订单，不存在时抛出业务异常。
+     */
     private Orders requireOrder(Long id) {
         Orders order = orderMapper.getById(id);
         if (order == null) throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         return order;
     }
 
+    /**
+     * 关闭订单并保证时段库存只释放一次。
+     */
     private void closeOrder(Orders db, Integer target, String reason) {
         Orders update = Orders.builder().id(db.getId()).status(target)
                 .cancelReason(reason).cancelTime(LocalDateTime.now()).slotReleased(1).build();
@@ -320,6 +386,9 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    /**
+     * 校验取餐时段是否属于当前档口且可用。
+     */
     private void validateSlot(PickupSlot slot, Long stallId) {
         if (slot == null || !stallId.equals(slot.getStallId()) || !Integer.valueOf(1).equals(slot.getStatus())) {
             throw new OrderBusinessException("取餐时段不可用");
@@ -332,17 +401,26 @@ public class OrderServiceImpl implements OrderService {
         if (slot.getBooked() >= slot.getCapacity()) throw new OrderBusinessException("该时段已约满");
     }
 
+    /**
+     * 查询取餐时段所属档口。
+     */
     private Stall getStallForSlot(PickupSlot slot) {
         Stall stall = stallMapper.getById(slot.getStallId());
         if (stall == null) throw new OrderBusinessException("档口不存在");
         return stall;
     }
 
+    /**
+     * 计算购物车商品总金额。
+     */
     private java.math.BigDecimal calculateAmount(List<ShoppingCart> carts) {
         return carts.stream().map(c -> c.getAmount().multiply(java.math.BigDecimal.valueOf(c.getNumber())))
                 .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
     }
 
+    /**
+     * 生成未被占用的取餐码。
+     */
     private String generatePickupCode() {
         for (int i = 0; i < 10; i++) {
             String code = String.format("%06d", ThreadLocalRandom.current().nextInt(100000, 1000000));
@@ -351,6 +429,9 @@ public class OrderServiceImpl implements OrderService {
         throw new OrderBusinessException("取餐码生成失败，请重试");
     }
 
+    /**
+     * 通过 WebSocket 推送订单事件。
+     */
     private void sendOrderEvent(Long orderId, String content) {
         Map<String, Object> map = new HashMap<>();
         map.put("type", 1);

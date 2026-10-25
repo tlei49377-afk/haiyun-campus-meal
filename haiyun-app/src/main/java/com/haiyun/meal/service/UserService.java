@@ -3,6 +3,9 @@ package com.haiyun.meal.service;
 import com.haiyun.meal.dto.UserLoginDTO;
 import com.haiyun.meal.entity.User;
 
+/**
+ * 学生用户业务接口。
+ */
 public interface UserService {
 
     /**
@@ -11,5 +14,8 @@ public interface UserService {
      * @return
      */
     User wxLogin(UserLoginDTO userLoginDTO);
+    /**
+     * 使用学号和密码登录学生账号。
+     */
     User studentLogin(UserLoginDTO userLoginDTO);
 }

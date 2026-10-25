@@ -32,6 +32,9 @@ public class OrderTools {
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /**
+     * 获取当前日期字符串。
+     */
     @Tool("获取系统当前日期，返回格式 yyyy-MM-dd。用户询问今天、明天、本周、最近等相对日期时，必须先调用此工具，禁止猜测日期。")
     public String currentDate() {
         return LocalDate.now().toString();
@@ -120,10 +123,16 @@ public class OrderTools {
         return LocalDateTime.parse(value, DATE_TIME_FORMATTER);
     }
 
+    /**
+     * 格式化时间。
+     */
     private String formatTime(LocalDateTime time) {
         return time == null ? "未知" : time.format(DATE_TIME_FORMATTER);
     }
 
+    /**
+     * 转换状态文本。
+     */
     private String toStatusText(Integer status) {
         if (status == null) {
             return "未知";
@@ -140,6 +149,9 @@ public class OrderTools {
         }
     }
 
+    /**
+     * 判断字符串是否非空白。
+     */
     private boolean isNotBlank(String text) {
         return text != null && !text.trim().isEmpty();
     }

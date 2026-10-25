@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+/**
+ * 学生端地址簿兼容接口。
+ */
 @RestController
 @RequestMapping("/api/app/addressBook")
 public class AddressBookController {
@@ -42,6 +45,9 @@ public class AddressBookController {
         return Result.success();
     }
 
+    /**
+     * 查询指定地址簿记录。
+     */
     @GetMapping("/{id}")
     public Result<AddressBook> getById(@PathVariable Long id) {
         AddressBook addressBook = addressBookService.getById(id);

@@ -10,6 +10,9 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // 过期时间抖动的单元测试
+/**
+ * 缓存辅助工具测试。
+ */
 class CacheHelperTest {
 
     /** 抖动后的过期时间要落在基准值上下 10% 以内 */

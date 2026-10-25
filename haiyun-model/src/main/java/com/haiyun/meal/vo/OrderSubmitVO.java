@@ -11,6 +11,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+/**
+ * 订单提交视图数据。
+ */
 @Data
 @Builder
 @NoArgsConstructor

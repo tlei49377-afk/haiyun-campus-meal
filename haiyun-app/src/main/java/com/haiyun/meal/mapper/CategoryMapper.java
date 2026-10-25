@@ -11,6 +11,9 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
+/**
+ * 菜品分类数据访问接口。
+ */
 @Mapper
 public interface CategoryMapper {
 
@@ -45,9 +48,15 @@ public interface CategoryMapper {
     @AutoFill(value = OperationType.UPDATE)
     void update(Category category);
 
+    /**
+     * 根据主键查询菜品分类。
+     */
     @Select("select * from category where id = #{id}")
     Category getById(Long id);
 
+    /**
+     * 查询档口下启用的菜品分类。
+     */
     @Select("select * from category where stall_id = #{stallId} and status = 1 order by sort asc, id asc")
     List<Category> listByStall(Long stallId);
 

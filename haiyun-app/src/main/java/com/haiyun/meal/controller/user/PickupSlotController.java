@@ -14,12 +14,18 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 学生端取餐时段查询接口。
+ */
 @RestController("appPickupSlotController")
 @RequestMapping("/api/app/slot")
 public class PickupSlotController {
     @Autowired
     private PickupSlotService pickupSlotService;
 
+    /**
+     * 查询当前可预约的取餐时段。
+     */
     @GetMapping("/list")
     public Result<List<PickupSlotVO>> list(PickupSlotQueryDTO query) {
         query.setStatus(1);

@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 学生端购物车接口。
+ */
 @RestController
 @RequestMapping("/api/app/shoppingCart")
 @Slf4j

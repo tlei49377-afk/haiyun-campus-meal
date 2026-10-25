@@ -6,11 +6,13 @@ import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
+/**
+ * 订单明细数据访问接口。
+ */
 @Mapper
 public interface OrderDetailMapper {
     /**
-     * 批量插入订单明细数据
-     * @param orderDetailList
+     * 批量插入订单明细数据。
      */
     void insertBatch(List<OrderDetail> orderDetailList);
 

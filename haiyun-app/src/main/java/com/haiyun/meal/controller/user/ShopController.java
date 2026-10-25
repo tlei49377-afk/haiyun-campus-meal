@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 学生端店铺营业状态查询接口。
+ */
 @RestController("usershopcontroller") // 响应数据使用 JSON
 @RequestMapping("/api/app/shop")
 @Slf4j

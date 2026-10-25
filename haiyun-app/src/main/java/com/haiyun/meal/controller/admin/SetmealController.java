@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 管理端套餐管理接口。
+ */
 @RestController
 @RequestMapping("/api/admin/setmeal")
 @Slf4j

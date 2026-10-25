@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.List;
 
+/**
+ * 权限业务实现。
+ */
 @Service
 @Slf4j
 public class PermissionServiceImpl implements PermissionService {

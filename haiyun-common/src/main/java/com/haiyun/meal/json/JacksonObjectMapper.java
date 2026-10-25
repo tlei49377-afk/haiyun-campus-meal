@@ -31,6 +31,9 @@ public class JacksonObjectMapper extends ObjectMapper {
     public static final String DEFAULT_DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm";
     public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
 
+    /**
+     * 创建项目统一的 Jackson 对象映射器。
+     */
     public JacksonObjectMapper() {
         super();
         //收到未知属性时不报异常

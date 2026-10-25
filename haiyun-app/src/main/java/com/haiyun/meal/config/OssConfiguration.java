@@ -14,6 +14,9 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 public class OssConfiguration {
 
+    /**
+     * 创建阿里云 OSS 工具。
+     */
     @Bean
     @ConditionalOnMissingBean // 如果容器中不存在AliOssUtil对象, 则创建该对象
     public AliOssUtil aliOssUtil(AliOssProperties aliOssProperties) {

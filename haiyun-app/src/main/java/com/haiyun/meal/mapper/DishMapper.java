@@ -13,6 +13,9 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 菜品数据访问接口。
+ */
 @Mapper
 public interface DishMapper {
 

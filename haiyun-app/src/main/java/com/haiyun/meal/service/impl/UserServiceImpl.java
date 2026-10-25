@@ -21,6 +21,9 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 学生用户业务实现。
+ */
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {

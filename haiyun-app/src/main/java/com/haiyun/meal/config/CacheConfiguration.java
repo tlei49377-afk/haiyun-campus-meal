@@ -26,6 +26,9 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class CacheConfiguration implements CachingConfigurer {
 
+    /**
+     * 创建 Redis 缓存管理器。
+     */
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         ObjectMapper objectMapper = new JacksonObjectMapper();
@@ -53,6 +56,9 @@ public class CacheConfiguration implements CachingConfigurer {
     }
 
     // 缓存读写出问题只记日志，别让业务接口跟着失败
+    /**
+     * 创建容错缓存异常处理器。
+     */
     @Override
     public CacheErrorHandler errorHandler() {
         return new TolerantCacheErrorHandler();

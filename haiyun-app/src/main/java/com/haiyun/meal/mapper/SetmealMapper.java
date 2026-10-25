@@ -14,6 +14,9 @@ import com.github.pagehelper.Page;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 套餐数据访问接口。
+ */
 @Mapper
 public interface SetmealMapper {
 

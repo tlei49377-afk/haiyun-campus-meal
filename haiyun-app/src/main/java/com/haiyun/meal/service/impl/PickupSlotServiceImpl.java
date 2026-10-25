@@ -19,6 +19,9 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 取餐时段业务实现。
+ */
 @Service
 public class PickupSlotServiceImpl implements PickupSlotService {
     @Autowired
@@ -26,6 +29,9 @@ public class PickupSlotServiceImpl implements PickupSlotService {
     @Autowired
     private StallMapper stallMapper;
 
+    /**
+     * 查询取餐时段并计算剩余名额。
+     */
     @Override
     public List<PickupSlotVO> list(PickupSlotQueryDTO query) {
         if (query.getSlotDate() == null) query.setSlotDate(LocalDate.now());
@@ -39,6 +45,9 @@ public class PickupSlotServiceImpl implements PickupSlotService {
         return result;
     }
 
+    /**
+     * 按时间间隔批量生成取餐时段。
+     */
     @Override
     @Transactional
     public int generate(PickupSlotGenerateDTO dto) {
@@ -79,12 +88,18 @@ public class PickupSlotServiceImpl implements PickupSlotService {
         return created;
     }
 
+    /**
+     * 修改取餐时段启停状态。
+     */
     @Override
     public void changeStatus(Long id, Integer status) {
         if (status == null || (status != 0 && status != 1)) throw new BaseException("状态不合法");
         pickupSlotMapper.updateStatus(id, status);
     }
 
+    /**
+     * 校验冲突后修改取餐时段。
+     */
     @Override
     @Transactional
     public void update(PickupSlotUpdateDTO dto) {
@@ -114,6 +129,9 @@ public class PickupSlotServiceImpl implements PickupSlotService {
         pickupSlotMapper.update(update);
     }
 
+    /**
+     * 删除未被预约的取餐时段。
+     */
     @Override
     @Transactional
     public void delete(Long id) {

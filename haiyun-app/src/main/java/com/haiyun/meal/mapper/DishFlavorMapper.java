@@ -7,11 +7,13 @@ import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
+/**
+ * 菜品口味数据访问接口。
+ */
 @Mapper
 public interface DishFlavorMapper {
     /**
-     * 批量插入口味数据
-     * @param flavors
+     * 批量插入菜品口味数据。
      */
     void insertBatch(List<DishFlavor> flavors);
 

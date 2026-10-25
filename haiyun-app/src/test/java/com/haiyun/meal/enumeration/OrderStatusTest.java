@@ -6,7 +6,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * 订单状态机测试。
+ */
 class OrderStatusTest {
+    /**
+     * 验证正常取餐流程允许逐级迁移。
+     */
     @Test
     void shouldAllowNormalPickupFlow() {
         assertTrue(OrderStatus.canTransfer(10, 20));
@@ -15,6 +21,9 @@ class OrderStatusTest {
         assertTrue(OrderStatus.canTransfer(40, 50));
     }
 
+    /**
+     * 验证取餐前各状态允许取消。
+     */
     @Test
     void shouldAllowCancellationBeforePickup() {
         assertTrue(OrderStatus.canTransfer(10, 60));
@@ -24,6 +33,9 @@ class OrderStatusTest {
         assertFalse(OrderStatus.canTransfer(50, 60));
     }
 
+    /**
+     * 验证不允许跳过状态或回退。
+     */
     @Test
     void shouldRejectSkippingAndBackward() {
         assertFalse(OrderStatus.canTransfer(10, 30));
@@ -32,6 +44,9 @@ class OrderStatusTest {
         assertFalse(OrderStatus.canTransfer(50, 10));
     }
 
+    /**
+     * 验证相同状态和终态不可再次迁移。
+     */
     @Test
     void shouldRejectSameAndTerminalStatus() {
         assertFalse(OrderStatus.canTransfer(10, 10));
@@ -41,6 +56,9 @@ class OrderStatusTest {
         assertFalse(OrderStatus.canTransfer(70, 10));
     }
 
+    /**
+     * 验证未知状态不能迁移。
+     */
     @Test
     void shouldRejectUnknownStatus() {
         assertFalse(OrderStatus.canTransfer(99, 10));
@@ -49,6 +67,9 @@ class OrderStatusTest {
         assertFalse(OrderStatus.canTransfer(10, null));
     }
 
+    /**
+     * 验证非法迁移会抛出业务异常。
+     */
     @Test
     void checkTransferShouldThrowOnIllegalTransition() {
         assertDoesNotThrow(() -> OrderStatus.checkTransfer(10, 20));

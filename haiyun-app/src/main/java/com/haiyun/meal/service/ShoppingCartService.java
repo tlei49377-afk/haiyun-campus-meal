@@ -5,6 +5,9 @@ import com.haiyun.meal.entity.ShoppingCart;
 
 import java.util.List;
 
+/**
+ * 购物车业务接口。
+ */
 public interface ShoppingCartService {
 
     /**

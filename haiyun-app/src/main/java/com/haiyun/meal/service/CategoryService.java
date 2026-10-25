@@ -6,6 +6,9 @@ import com.haiyun.meal.entity.Category;
 import com.haiyun.meal.result.PageResult;
 import java.util.List;
 
+/**
+ * 菜品分类业务接口。
+ */
 public interface CategoryService {
 
     /**

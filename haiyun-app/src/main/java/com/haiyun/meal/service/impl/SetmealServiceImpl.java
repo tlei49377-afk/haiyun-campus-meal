@@ -26,6 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * 套餐业务实现。
+ */
 @Service
 public class SetmealServiceImpl implements SetmealService {
 

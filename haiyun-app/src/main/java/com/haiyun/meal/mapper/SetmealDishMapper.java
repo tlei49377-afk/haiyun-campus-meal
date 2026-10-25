@@ -7,12 +7,13 @@ import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
+/**
+ * 套餐菜品数据访问接口。
+ */
 @Mapper
 public interface SetmealDishMapper {
     /**
-     * 根据菜品id查询套餐id
-     * @param dishIds
-     * @return
+     * 根据菜品 ID 查询关联的套餐 ID。
      */
     List<Long> getSetmealIdsByDishIds(List<Long> dishIds);
 

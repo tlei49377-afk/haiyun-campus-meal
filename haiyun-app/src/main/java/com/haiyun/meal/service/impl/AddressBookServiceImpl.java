@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
+/**
+ * 地址簿业务实现。
+ */
 @Service
 @Slf4j
 public class AddressBookServiceImpl implements AddressBookService {

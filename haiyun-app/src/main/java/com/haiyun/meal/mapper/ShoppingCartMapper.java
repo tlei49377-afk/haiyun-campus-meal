@@ -8,6 +8,9 @@ import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
+/**
+ * 购物车数据访问接口。
+ */
 @Mapper
 public interface ShoppingCartMapper {
 

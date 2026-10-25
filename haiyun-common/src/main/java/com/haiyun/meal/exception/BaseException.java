@@ -5,9 +5,15 @@ package com.haiyun.meal.exception;
  */
 public class BaseException extends RuntimeException {
 
+    /**
+     * 创建BaseException。
+     */
     public BaseException() {
     }
 
+    /**
+     * 使用指定消息创建BaseException。
+     */
     public BaseException(String msg) {
         super(msg);
     }

@@ -5,6 +5,9 @@ import lombok.Data;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * 角色请求数据。
+ */
 @Data
 public class RoleDTO implements Serializable {
 

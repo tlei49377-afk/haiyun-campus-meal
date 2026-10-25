@@ -6,6 +6,9 @@ import org.apache.ibatis.annotations.Select;
 
 import java.util.Map;
 
+/**
+ * 学生用户数据访问接口。
+ */
 @Mapper
 public interface UserMapper {
 
@@ -17,6 +20,9 @@ public interface UserMapper {
     @Select("select * from user where openid = #{openid}")
     User getByOpenid(String openid);
 
+    /**
+     * 根据学号查询学生用户。
+     */
     @Select("select * from user where student_no = #{studentNo}")
     User getByStudentNo(String studentNo);
 

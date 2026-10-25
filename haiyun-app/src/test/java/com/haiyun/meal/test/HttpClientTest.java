@@ -14,6 +14,9 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.boot.test.context.SpringBootTest;
 
 //@SpringBootTest
+/**
+ * HTTP 客户端测试。
+ */
 @Disabled("手动调试用：需要本地先启动 8080 的服务，默认不参与 mvn test")
 public class HttpClientTest {
 

@@ -7,12 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** 只保留 AI 对话所需的 Redis 记忆，不启用可选的 RAG 向量检索。 */
+/**
+ * 只保留 AI 对话所需的 Redis 记忆，不启用可选的 RAG 向量检索。
+ */
 @Configuration
 public class CommonConfig {
     @Autowired
     private ChatMemoryStore redisChatMemoryStore;
 
+    /**
+     * 创建 AI 会话记忆提供者。
+     */
     @Bean
     public ChatMemoryProvider chatMemoryProvider() {
         return memoryId -> MessageWindowChatMemory.builder()

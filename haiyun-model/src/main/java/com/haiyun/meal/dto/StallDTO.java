@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 档口请求数据。
+ */
 @Data
 public class StallDTO implements Serializable {
     private Long id;
