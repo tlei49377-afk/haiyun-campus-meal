@@ -11,4 +11,5 @@ public interface UserService {
      * @return
      */
     User wxLogin(UserLoginDTO userLoginDTO);
+    User studentLogin(UserLoginDTO userLoginDTO);
 }

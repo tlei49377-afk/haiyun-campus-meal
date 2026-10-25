@@ -35,12 +35,14 @@ public class UserController {
      */
     @PostMapping("login")
     public Result<UserLoginVO> login(@RequestBody UserLoginDTO userLoginDTO){
-        log.info("微信用户登录：{}", userLoginDTO.getCode());
+        log.info("学生登录：{}", userLoginDTO.getStudentNo() == null ? "微信 code" : userLoginDTO.getStudentNo());
 
-        // 微信登录
-        User user = userService.wxLogin(userLoginDTO);
+        // 本地账号优先；没有学号时继续兼容微信 code 登录
+        User user = userLoginDTO.getStudentNo() != null
+                ? userService.studentLogin(userLoginDTO)
+                : userService.wxLogin(userLoginDTO);
 
-        // 为微信用户，生成jwt令牌，返回给用户
+        // 生成 jwt 令牌，返回给用户
         Map<String, Object> claims = new HashMap<>();
         claims.put(JwtClaimsConstant.USER_ID, user.getId());
         String token = JwtUtil.createJWT(jwtProperties.getUserSecretKey(),
@@ -50,6 +52,8 @@ public class UserController {
         UserLoginVO userLoginVO = UserLoginVO.builder()
                 .id(user.getId())
                 .openid(user.getOpenid())
+                .studentNo(user.getStudentNo())
+                .name(user.getName())
                 .token(token)
                 .build();
         return Result.success(userLoginVO);

@@ -46,9 +46,6 @@ public class OrderController {
         OrderPaymentVO orderPaymentVO = orderService.payment(ordersPaymentDTO);
         log.info("生成预支付交易单：{}", orderPaymentVO);
 
-        // 未接入真实微信支付，用模拟交易号，同一订单重复支付同样会被幂等拦截
-        orderService.paySuccess(ordersPaymentDTO.getOrderNumber(), "MOCK_" + ordersPaymentDTO.getOrderNumber());
-
         return Result.success(orderPaymentVO);
     }
 
@@ -56,7 +53,7 @@ public class OrderController {
      * 历史订单查询
      * @param page
      * @param pageSize
-     * @param status 订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
+     * @param status 订单状态 10待支付 20待接单 30制作中 40待取餐 50已取餐 60已取消 70已退款
      * @return
      */
     @GetMapping("/historyOrders")

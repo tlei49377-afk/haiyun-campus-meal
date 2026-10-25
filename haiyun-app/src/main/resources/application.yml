@@ -4,6 +4,10 @@ server:
 spring:
   profiles:
     active: dev
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
   datasource:
     druid:
       driver-class-name: ${app.datasource.driver-class-name}
@@ -27,11 +31,10 @@ mybatis:
 
 logging:
   level:
-    com:
-      app:
-        mapper: debug
-        service: info
-        controller: info
+    com.haiyun.meal:
+      mapper: debug
+      service: info
+      controller: info
   pattern:
     # 日志里带上 traceId，方便把一个请求的多行日志串起来
     correlation: "[%X{traceId:-}] "
@@ -60,13 +63,13 @@ management:
 app:
   jwt:
     # 设置jwt签名加密时使用的秘钥
-    admin-secret-key: ${SKY_JWT_ADMIN_SECRET}
+    admin-secret-key: ${HAIYUN_JWT_ADMIN_SECRET}
     # 设置jwt过期时间
     admin-ttl: 7200000
     # 设置前端传递过来的令牌名称
     admin-token-name: token
 
-    user-secret-key: ${SKY_JWT_USER_SECRET}
+    user-secret-key: ${HAIYUN_JWT_USER_SECRET}
     user-ttl: 7200000
     user-token-name: authentication
   alioss:
@@ -75,19 +78,19 @@ app:
     access-key-secret: ${app.alioss.access-key-secret}
     bucket-name: ${app.alioss.bucket-name}
   wechat:
-    # 商户号（从 sky.wechat.mchid 配置项读取）
+    # 商户号（从 app.wechat.mchid 配置项读取）
     mchid: ${app.wechat.mchid}
-    # 商户API证书序列号（从 sky.wechat.mchSerialNo 配置项读取）
+    # 商户API证书序列号（从 app.wechat.mchSerialNo 配置项读取）
     mchSerialNo: ${app.wechat.mchSerialNo}
-    # 商户私钥文件路径（从 sky.wechat.privateKeyFilePath 配置项读取）
+    # 商户私钥文件路径（从 app.wechat.privateKeyFilePath 配置项读取）
     # privateKeyFilePath: ${app.wechat.privateKeyFilePath}
-    # 微信支付V3 API密钥（从 sky.wechat.apiV3Key 配置项读取）
+    # 微信支付V3 API密钥（从 app.wechat.apiV3Key 配置项读取）
     apiV3Key: ${app.wechat.apiV3Key}
-    # 微信支付平台证书文件路径（从 sky.wechat.weChatPayCertFilePath 配置项读取）
+    # 微信支付平台证书文件路径（从 app.wechat.weChatPayCertFilePath 配置项读取）
     # weChatPayCertFilePath: ${app.wechat.weChatPayCertFilePath}
-    # 支付成功回调地址（从 sky.wechat.notifyUrl 配置项读取）
+    # 支付成功回调地址（从 app.wechat.notifyUrl 配置项读取）
     notifyUrl: ${app.wechat.notifyUrl}
-    # 退款成功回调地址（从 sky.wechat.refundNotifyUrl 配置项读取）
+    # 退款成功回调地址（从 app.wechat.refundNotifyUrl 配置项读取）
     refundNotifyUrl: ${app.wechat.refundNotifyUrl}
   shop:
     address: ${app.shop.address}
@@ -98,25 +101,13 @@ langchain4j:
   open-ai:
     chat-model:
       base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
-      api-key: ${QW-API-KEY}
+      api-key: ${QW-API-KEY:${QW_API_KEY:not-configured}}
       model-name: qwen-plus
       log-requests: true
       log-responses: true
     streaming-chat-model:
       base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
-      api-key: ${QW-API-KEY}
+      api-key: ${QW-API-KEY:${QW_API_KEY:not-configured}}
       model-name: qwen-plus
       log-requests: true
       log-responses: true
-    embedding-model:
-      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
-      api-key: ${QW-API-KEY}
-      model-name: qwen3.7-text-embedding-flash
-      log-requests: true
-      log-responses: true
-      max-segments-per-batch: 20
-  community:
-    redis:
-      host: localhost
-      port: 6380
-      dimension: 1024

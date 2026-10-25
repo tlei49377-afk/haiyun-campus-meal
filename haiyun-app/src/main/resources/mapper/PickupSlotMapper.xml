@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haiyun.meal.mapper.PickupSlotMapper">
+    <update id="update" parameterType="PickupSlot">
+        update pickup_slot
+        <set>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="capacity != null">capacity = #{capacity},</if>
+            <if test="status != null">status = #{status},</if>
+            version = version + 1,
+            update_time = now()
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="list" resultType="PickupSlot">
+        select * from pickup_slot
+        <where>
+            <if test="stallId != null">and stall_id = #{stallId}</if>
+            <if test="slotDate != null">and slot_date = #{slotDate}</if>
+            <if test="status != null">and status = #{status}</if>
+        </where>
+        order by slot_date asc, start_time asc
+    </select>
+</mapper>

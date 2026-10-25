@@ -5,11 +5,13 @@ import com.haiyun.meal.dto.OrdersCancelDTO;
 import com.haiyun.meal.dto.OrdersConfirmDTO;
 import com.haiyun.meal.dto.OrdersPageQueryDTO;
 import com.haiyun.meal.dto.OrdersRejectionDTO;
+import com.haiyun.meal.dto.PickupVerifyDTO;
 import com.haiyun.meal.result.PageResult;
 import com.haiyun.meal.result.Result;
 import com.haiyun.meal.service.OrderService;
 import com.haiyun.meal.vo.OrderStatisticsVO;
 import com.haiyun.meal.vo.OrderVO;
+import com.haiyun.meal.vo.PickupVerifyVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +59,7 @@ public class OrderController {
     @GetMapping("/details/{id}")
     public Result<OrderVO> details(@PathVariable("id") Long id){
         log.info("订单详情，订单id为{}", id);
-        OrderVO orderVO = orderService.orderDetail(id);
+        OrderVO orderVO = orderService.orderDetailForAdmin(id);
         return Result.success(orderVO);
     }
 
@@ -101,26 +103,22 @@ public class OrderController {
     }
 
     /**
-     * 派送订单
-     * @param id
+     * 档口开始制作后，标记为待取餐
      */
     @RequirePermission("order:handle")
-    @PutMapping("/delivery/{id}")
-    public Result delivery(@PathVariable("id") Long id){
-        log.info("派送订单");
-        orderService.delivery(id);
+    @PutMapping("/ready/{id}")
+    public Result ready(@PathVariable Long id) {
+        orderService.ready(id);
         return Result.success();
     }
 
     /**
-     * 完成订单
-     * @param id
+     * 核销取餐码
      */
     @RequirePermission("order:handle")
-    @PutMapping("/complete/{id}")
-    public Result complete(@PathVariable("id") Long id){
-        log.info("完成订单");
-        orderService.complete(id);
-        return Result.success();
+    @PostMapping("/pickup/verify")
+    public Result<PickupVerifyVO> verifyPickup(@RequestBody PickupVerifyDTO dto) {
+        return Result.success(orderService.verifyPickup(dto));
     }
+
 }

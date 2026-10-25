@@ -18,6 +18,7 @@ import com.haiyun.meal.mapper.EmployeeMapper;
 import com.haiyun.meal.result.PageResult;
 import com.haiyun.meal.service.EmployeeService;
 import com.haiyun.meal.service.RoleService;
+import com.haiyun.meal.service.PasswordService;
 import com.haiyun.meal.vo.EmployeeRoleVO;
 import com.haiyun.meal.vo.EmployeeVO;
 import org.springframework.beans.BeanUtils;
@@ -25,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.github.pagehelper.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -44,6 +44,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private RoleService roleService;
+
+    @Autowired
+    private PasswordService passwordService;
 
     /**
      * 员工登录
@@ -64,12 +67,13 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
         }
 
-        //密码比对
-        // md5加密，然后再进行比对
-        password = DigestUtils.md5DigestAsHex(password.getBytes());
-        if (!password.equals(employee.getPassword())) {
-            //密码错误
+        // 兼容历史 MD5，首次成功登录后自动升级为 BCrypt
+        if (!passwordService.matches(password, employee.getPassword())) {
             throw new PasswordErrorException(MessageConstant.PASSWORD_ERROR);
+        }
+        if (passwordService.isLegacy(employee.getPassword())) {
+            employeeMapper.update(Employee.builder().id(employee.getId())
+                    .password(passwordService.encode(password)).build());
         }
 
         if (employee.getStatus() == StatusConstant.DISABLE) {
@@ -105,7 +109,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         String password = StringUtils.hasText(employeeDTO.getPassword())
                 ? employeeDTO.getPassword()
                 : PasswordConstant.DEFAULT_PASSWORD;
-        employee.setPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
+        employee.setPassword(passwordService.encode(password));
 
         // // 设置当前记录的创建时间和修改时间
         // employee.setCreateTime(LocalDateTime.now());
@@ -219,7 +223,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 密码单独处理：不填保持原密码，填了就加密后覆盖
         employee.setPassword(null);
         if (StringUtils.hasText(employeeDTO.getPassword())) {
-            employee.setPassword(DigestUtils.md5DigestAsHex(employeeDTO.getPassword().getBytes()));
+            employee.setPassword(passwordService.encode(employeeDTO.getPassword()));
         }
 
         // employee.setUpdateTime(LocalDateTime.now());

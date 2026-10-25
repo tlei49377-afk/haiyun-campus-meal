@@ -14,6 +14,8 @@ import com.haiyun.meal.utils.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -31,6 +33,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     /**
      * 微信登录
      * @param userLoginDTO
@@ -58,6 +63,20 @@ public class UserServiceImpl implements UserService {
         }
 
         // 返回用户对象
+        return user;
+    }
+
+    /**
+     * 学生本地登录，便于没有微信开发者账号时演示 H5 全链路。
+     */
+    public User studentLogin(UserLoginDTO dto) {
+        if (!StringUtils.hasText(dto.getStudentNo()) || !StringUtils.hasText(dto.getPassword())) {
+            throw new LoginFailedException(MessageConstant.LOGIN_FAILED);
+        }
+        User user = userMapper.getByStudentNo(dto.getStudentNo().trim());
+        if (user == null || user.getPassword() == null || !passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new LoginFailedException(MessageConstant.LOGIN_FAILED);
+        }
         return user;
     }
 

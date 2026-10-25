@@ -8,9 +8,9 @@ public class OrderStatisticsVO implements Serializable {
     //待接单数量
     private Integer toBeConfirmed;
 
-    //待派送数量
-    private Integer confirmed;
+    //制作中数量
+    private Integer making;
 
-    //派送中数量
-    private Integer deliveryInProgress;
+    //待取餐数量
+    private Integer readyForPickup;
 }
