@@ -10,18 +10,19 @@ const active = computed(() => route.path)
 const today = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })
 const menus = [
   { path: '/admin/dashboard', label: '工作台', icon: DataBoard },
-  { path: '/admin/canteens', label: '食堂管理', icon: OfficeBuilding },
-  { path: '/admin/stalls', label: '档口管理', icon: Shop },
-  { path: '/admin/slots', label: '取餐时段', icon: Clock },
-  { path: '/admin/categories', label: '分类管理', icon: Collection },
-  { path: '/admin/dishes', label: '菜品管理', icon: Dish },
-  { path: '/admin/combos', label: '套餐管理', icon: Box },
-  { path: '/admin/orders', label: '订单管理', icon: Tickets },
-  { path: '/admin/reports', label: '数据统计', icon: TrendCharts },
-  { path: '/admin/verify', label: '取餐核销', icon: FullScreen },
-  { path: '/admin/staff', label: '员工与权限', icon: User },
+  { path: '/admin/canteens', label: '食堂管理', icon: OfficeBuilding, permission: 'canteen:query' },
+  { path: '/admin/stalls', label: '档口管理', icon: Shop, permission: 'stall:query' },
+  { path: '/admin/slots', label: '取餐时段', icon: Clock, permission: 'slot:query' },
+  { path: '/admin/categories', label: '分类管理', icon: Collection, permission: 'category:query' },
+  { path: '/admin/dishes', label: '菜品管理', icon: Dish, permission: 'dish:query' },
+  { path: '/admin/combos', label: '套餐管理', icon: Box, permission: 'setmeal:query' },
+  { path: '/admin/orders', label: '订单管理', icon: Tickets, permission: 'order:query' },
+  { path: '/admin/reports', label: '数据统计', icon: TrendCharts, permission: 'report:query' },
+  { path: '/admin/verify', label: '取餐核销', icon: FullScreen, permission: 'order:handle' },
+  { path: '/admin/staff', label: '员工与权限', icon: User, permission: 'employee:query' },
   { path: '/admin/ai', label: 'AI 助手', icon: ChatDotRound }
 ]
+const visibleMenus = computed(() => menus.filter(item => auth.hasPermission(item.permission)))
 const currentLabel = computed(() => menus.find(item => item.path === active.value)?.label || '运营中心')
 let socket: WebSocket | undefined
 let reconnectTimer: number | undefined
@@ -50,7 +51,7 @@ onBeforeUnmount(() => { closedByUser = true; socket?.close(); if (reconnectTimer
       <div class="campus-brand"><span class="campus-mark">海</span><div><strong>海韵食刻</strong><small>海南热带海洋学院</small></div></div>
       <p class="menu-caption">校园餐饮运营</p>
       <el-menu :default-active="active" router class="admin-menu">
-        <el-menu-item v-for="item in menus" :key="item.path" :index="item.path"><el-icon><component :is="item.icon" /></el-icon><span>{{ item.label }}</span></el-menu-item>
+        <el-menu-item v-for="item in visibleMenus" :key="item.path" :index="item.path"><el-icon><component :is="item.icon" /></el-icon><span>{{ item.label }}</span></el-menu-item>
       </el-menu>
       <div class="aside-footer"><span>校园餐饮服务中心</span><small>内部运营系统</small></div>
     </aside>

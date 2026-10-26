@@ -1,5 +1,5 @@
 import { del, get, post, put } from '../utils/request'
-import type { Canteen, Dish, Employee, Order, OrderDetail, Permission, PickupSlot, Role, Stall } from './types'
+import type { Canteen, ChatMessage, ChatSession, Dish, Employee, Order, OrderDetail, Permission, PickupSlot, Role, Stall } from './types'
 
 export const adminLogin = (data: { username: string; password: string }) => post<{ token: string; userName: string; name: string; permissions: string[]; id: number }>('/admin/employee/login', data)
 
@@ -63,3 +63,8 @@ export const createSetmeal = (data: Record<string, unknown>) => post<null>('/adm
 export const updateSetmeal = (data: Record<string, unknown>) => put<null>('/admin/setmeal', data)
 export const deleteSetmeals = (ids: number[]) => del<null>('/admin/setmeal', { ids: ids.join(',') })
 export const toggleSetmealStatus = (id: number, status: number) => post<null>(`/admin/setmeal/status/${status}?id=${id}`)
+
+export const createChatSession = () => post<string>('/admin/chat/session')
+export const listChatSessions = () => get<ChatSession[]>('/admin/chat/sessions')
+export const getChatSessionMessages = (memoryId: string) => get<ChatMessage[]>(`/admin/chat/session/${encodeURIComponent(memoryId)}/messages`)
+export const deleteChatSession = (memoryId: string) => del<null>(`/admin/chat/session/${encodeURIComponent(memoryId)}`)

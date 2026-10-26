@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { getBusinessData, getDishOverview, getOrderOverview, getSetmealOverview, orderStatistics } from '../../api/admin'
 const router = useRouter()
 const stats = ref({ toBeConfirmed: 0, making: 0, readyForPickup: 0 })
 const business = ref({ turnover: 0, validOrderCount: 0, orderCompletionRate: 0, unitPrice: 0, newUsers: 0 })
 const orderOverview = ref({ waitingOrders: 0, makingOrders: 0, completedOrders: 0, cancelledOrders: 0, allOrders: 0 })
 const goods = ref({ dishSold: 0, dishStopped: 0, comboOnSale: 0, comboStopped: 0 })
-onMounted(async () => { try { const [s, b, o, d, m] = await Promise.all([orderStatistics(), getBusinessData(), getOrderOverview(), getDishOverview(), getSetmealOverview()]); stats.value = s; business.value = b; orderOverview.value = o; goods.value = { dishSold: d.sold, dishStopped: d.discontinued, comboOnSale: m.sold, comboStopped: m.discontinued } } catch { /* 页面保留空状态 */ } })
+onMounted(async () => { try { const [s, b, o, d, m] = await Promise.all([orderStatistics(), getBusinessData(), getOrderOverview(), getDishOverview(), getSetmealOverview()]); stats.value = s; business.value = b; orderOverview.value = o; goods.value = { dishSold: d.sold, dishStopped: d.discontinued, comboOnSale: m.sold, comboStopped: m.discontinued } } catch (error) { ElMessage.error((error as Error).message) } })
 </script>
 <template>
   <div class="dashboard">

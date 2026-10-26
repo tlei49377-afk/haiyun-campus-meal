@@ -44,6 +44,7 @@ npm run build
 | 管理端 | AI 助手 | `/admin/ai` |
 | 学生端 | 食堂首页 | `/student/home` |
 | 学生端 | 档口菜单 | `/student/menu/:stallId` |
+| 学生端 | 菜品详情 | `/student/dish/:dishId` |
 | 学生端 | 购物车 | `/student/cart` |
 | 学生端 | 我的订单 | `/student/orders` |
 | 学生端 | 取餐码 | `/student/pickup/:id` |

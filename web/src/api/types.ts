@@ -76,7 +76,7 @@ export interface Order {
   remark?: string
   cancelReason?: string
   rejectionReason?: string
-  orderDetailList?: Array<{ name: string; number: number; amount: number }>
+  orderDetailList?: OrderDetail[]
 }
 
 export interface OrderSubmitResult {
@@ -140,4 +140,16 @@ export interface OrderDetail {
   dishId?: number
   setmealId?: number
   dishFlavor?: string
+}
+
+
+export interface ChatSession {
+  memoryId: string
+  title: string
+  lastActiveTime: number
+}
+
+export interface ChatMessage {
+  role: 'user' | 'ai'
+  content: string
 }

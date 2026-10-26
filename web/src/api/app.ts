@@ -3,10 +3,13 @@ import type { Canteen, Category, Dish, Order, OrderSubmitResult, PickupSlot, Sho
 
 export const studentLogin = (data: { studentNo: string; password: string }) =>
   post<{ token: string; name: string; studentNo: string; id: number }>('/app/user/login', data)
+export const studentRegister = (data: { studentNo: string; name: string; phone?: string; password: string }) =>
+  post<{ token: string; name: string; studentNo: string; id: number }>('/app/user/register', data)
 export const listAppCanteens = () => get<Canteen[]>('/app/canteen/list')
 export const listAppStalls = (canteenId: number) => get<Stall[]>('/app/stall/list', { canteenId })
 export const listAppCategories = (stallId: number) => get<Category[]>('/app/category/list', { stallId })
 export const listAppDishes = (categoryId: number) => get<Dish[]>('/app/dish/list', { categoryId })
+export const getAppDish = (id: number) => get<Dish>(`/app/dish/${id}`)
 export const listAppSlots = (stallId: number, slotDate: string) => get<PickupSlot[]>('/app/slot/list', { stallId, slotDate })
 export const addCart = (dishId: number) => post<null>('/app/shoppingCart/add', { dishId })
 export const listCart = () => get<ShoppingCart[]>('/app/shoppingCart/list')
