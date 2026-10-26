@@ -56,9 +56,9 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
         log.info("准备生成接口文档...");
         return new OpenAPI()
                 .info(new Info()
-                        .title("智能外卖平台接口文档")
+                        .title("海韵食刻校园食堂预约取餐平台接口文档")
                         .version("2.0")
-                        .description("智能外卖平台接口文档"));
+                        .description("海韵食刻校园食堂预约取餐平台接口文档"));
     }
 
     /**

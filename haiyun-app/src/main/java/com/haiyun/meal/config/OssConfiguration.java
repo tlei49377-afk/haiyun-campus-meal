@@ -15,12 +15,12 @@ import org.springframework.context.annotation.Configuration;
 public class OssConfiguration {
 
     /**
-     * 创建阿里云 OSS 工具。
+     * 创建阿里云 OSS 工具实例。
      */
     @Bean
     @ConditionalOnMissingBean // 如果容器中不存在AliOssUtil对象, 则创建该对象
     public AliOssUtil aliOssUtil(AliOssProperties aliOssProperties) {
-        log.info("开始创建阿里云文件上传工具类对象: {}", aliOssProperties);
+        log.info("开始创建 OSS 客户端");
         return new AliOssUtil(aliOssProperties.getEndpoint(),
                 aliOssProperties.getAccessKeyId(),
                 aliOssProperties.getAccessKeySecret(),

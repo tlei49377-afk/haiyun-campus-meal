@@ -32,7 +32,7 @@ public class ShopController {
                 log.info("店铺营业状态缺失，已初始化为营业中");
             }
         } catch (Exception e) {
-            log.warn("初始化店铺营业状态失败，Redis 可能未就绪", e);
+            log.warn("初始化店铺营业状态失败，Redis 可能未就绪：{}", e.getMessage());
         }
     }
 
@@ -45,7 +45,11 @@ public class ShopController {
     @PutMapping("/{status}")
     public Result get(@PathVariable Integer status) {
         log.info("设置店铺营业状态：{}", status == 1 ? "营业中" : "打烊中");
-        redisTemplate.opsForValue().set(KEY, status);
+        try {
+            redisTemplate.opsForValue().set(KEY, status);
+        } catch (Exception e) {
+            log.warn("营业状态写入 Redis 失败：{}", e.getMessage());
+        }
         return Result.success();
     }
 
@@ -55,8 +59,14 @@ public class ShopController {
      */
     @GetMapping("/status")
     public Result<Integer> getStatus() {
-        Integer status = (Integer) redisTemplate.opsForValue().get(KEY);
-        log.info("获取店铺营业状态为：", status == 1 ? "营业中" : "打烊中");
+        Integer status = 1;
+        try {
+            Integer cached = (Integer) redisTemplate.opsForValue().get(KEY);
+            if (cached != null) status = cached;
+        } catch (Exception e) {
+            log.warn("营业状态读取 Redis 失败，使用默认营业中：{}", e.getMessage());
+        }
+        log.info("获取食堂营业状态：{}", status == 1 ? "营业中" : "打烊中");
         return Result.success(status);
     }
 }

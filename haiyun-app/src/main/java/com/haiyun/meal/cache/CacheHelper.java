@@ -30,7 +30,7 @@ public class CacheHelper {
     private static final ObjectMapper objectMapper = new JacksonObjectMapper();
 
     //缓存命中率的指标名
-    private static final String METRIC_NAME = "sky.cache.requests";
+    private static final String METRIC_NAME = "haiyun.cache.requests";
 
     @Autowired
     private StringRedisTemplate redisTemplate;
@@ -47,9 +47,21 @@ public class CacheHelper {
      * @return
      */
     public <T> T getOrLoad(String key, TypeReference<T> type, Duration ttl, Supplier<T> loader) {
-        String json = redisTemplate.opsForValue().get(key);
+        String json = null;
+        try {
+            json = redisTemplate.opsForValue().get(key);
+        } catch (Exception e) {
+            log.warn("缓存读取失败，直接回源数据库：key={}, reason={}", key, e.getMessage());
+            return loader.get();
+        }
         if (json != null) {
+            /**
+             * 记录缓存指标。
+             */
             count(key, "hit");
+            /**
+             * 将 JSON 反序列化为指定类型。
+             */
             return parse(json, type);
         }
 
@@ -57,11 +69,24 @@ public class CacheHelper {
 
         // 热点 key 失效时只放一个请求去查库，其他的等它把缓存写好
         String lockKey = key + CacheConstant.LOCK_SUFFIX;
-        Boolean locked = redisTemplate.opsForValue().setIfAbsent(lockKey, "1", CacheConstant.LOCK_TTL);
+        Boolean locked;
+        try {
+            locked = redisTemplate.opsForValue().setIfAbsent(lockKey, "1", CacheConstant.LOCK_TTL);
+        } catch (Exception e) {
+            log.warn("缓存互斥锁不可用，直接回源数据库：key={}, reason={}", key, e.getMessage());
+            return loader.get();
+        }
         if (!Boolean.TRUE.equals(locked)) {
             for (int i = 0; i < CacheConstant.LOCK_WAIT_RETRY; i++) {
+                /**
+                 * 短暂休眠后重试。
+                 */
                 sleep(CacheConstant.LOCK_WAIT_MILLIS);
-                json = redisTemplate.opsForValue().get(key);
+                try {
+                    json = redisTemplate.opsForValue().get(key);
+                } catch (Exception e) {
+                    return loader.get();
+                }
                 if (json != null) {
                     count(key, "hit");
                     return parse(json, type);
@@ -74,10 +99,21 @@ public class CacheHelper {
         try {
             count(key, "load");
             T value = loader.get();
-            write(key, value, ttl);
+            try {
+                /**
+                 * 写入缓存数据。
+                 */
+                write(key, value, ttl);
+            } catch (Exception e) {
+                log.warn("缓存写入失败，本次返回数据库结果：key={}, reason={}", key, e.getMessage());
+            }
             return value;
         } finally {
-            redisTemplate.delete(lockKey);
+            try {
+                redisTemplate.delete(lockKey);
+            } catch (Exception e) {
+                log.warn("缓存锁释放失败：key={}, reason={}", lockKey, e.getMessage());
+            }
         }
     }
 
@@ -86,22 +122,26 @@ public class CacheHelper {
      * @param pattern
      */
     public void evictByPrefix(String pattern) {
-        Set<String> keys = new HashSet<>();
-        ScanOptions options = ScanOptions.scanOptions().match(pattern).count(500).build();
-        try (Cursor<String> cursor = redisTemplate.scan(options)) {
-            while (cursor.hasNext()) {
-                keys.add(cursor.next());
+        try {
+            Set<String> keys = new HashSet<>();
+            ScanOptions options = ScanOptions.scanOptions().match(pattern).count(500).build();
+            try (Cursor<String> cursor = redisTemplate.scan(options)) {
+                while (cursor.hasNext()) {
+                    keys.add(cursor.next());
+                }
             }
+            if (keys.isEmpty()) {
+                return;
+            }
+            redisTemplate.delete(keys);
+            log.info("清理缓存 {} 个，pattern={}", keys.size(), pattern);
+        } catch (Exception e) {
+            log.warn("缓存清理失败，忽略并依赖 TTL 兜底：pattern={}, reason={}", pattern, e.getMessage());
         }
-        if (keys.isEmpty()) {
-            return;
-        }
-        redisTemplate.delete(keys);
-        log.info("清理缓存 {} 个，pattern={}", keys.size(), pattern);
     }
 
     /**
-     * 写入缓存。
+     * 写入缓存，并控制空结果的有效期。
      */
     private <T> void write(String key, T value, Duration ttl) {
         // 空结果说明这个条件确实没数据，缓存一小会儿就够，别把内存占住
@@ -110,15 +150,14 @@ public class CacheHelper {
     }
 
     /**
-     * 判断缓存对象是否为空。
+     * 判断缓存值是否为空。
      */
     private boolean isEmpty(Object value) {
         return value == null || (value instanceof Collection && ((Collection<?>) value).isEmpty());
     }
 
-    // 按 key 前缀区分是哪个缓存，统计命中、未命中与回源次数
     /**
-     * 记录缓存命中、未命中和回源次数。
+     * 按缓存名称记录命中、未命中和回源指标。
      */
     private void count(String key, String result) {
         int index = key.indexOf('_');
@@ -161,7 +200,7 @@ public class CacheHelper {
     }
 
     /**
-     * 短暂休眠。
+     * 短暂休眠指定毫秒数。
      */
     private void sleep(long millis) {
         try {

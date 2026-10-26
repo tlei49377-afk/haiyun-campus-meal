@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.ByteArrayInputStream;
 
 /**
- * 阿里云 OSS工具类。
+ * 阿里云 OSS 上传工具。
  */
 @Data
 @AllArgsConstructor
@@ -38,17 +38,12 @@ public class AliOssUtil {
             // 创建PutObject请求。
             ossClient.putObject(bucketName, objectName, new ByteArrayInputStream(bytes));
         } catch (OSSException oe) {
-            System.out.println("Caught an OSSException, which means your request made it to OSS, "
-                    + "but was rejected with an error response for some reason.");
-            System.out.println("Error Message:" + oe.getErrorMessage());
-            System.out.println("Error Code:" + oe.getErrorCode());
-            System.out.println("Request ID:" + oe.getRequestId());
-            System.out.println("Host ID:" + oe.getHostId());
+            log.error("OSS 上传失败：code={}, message={}, requestId={}",
+                    oe.getErrorCode(), oe.getErrorMessage(), oe.getRequestId());
+            throw new IllegalStateException("OSS 上传失败，请检查 AccessKey、Bucket 和权限", oe);
         } catch (ClientException ce) {
-            System.out.println("Caught an ClientException, which means the client encountered "
-                    + "a serious internal problem while trying to communicate with OSS, "
-                    + "such as not being able to access the network.");
-            System.out.println("Error Message:" + ce.getMessage());
+            log.error("OSS 客户端连接失败：{}", ce.getMessage());
+            throw new IllegalStateException("OSS 服务连接失败，请检查网络和 Endpoint", ce);
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();

@@ -37,6 +37,9 @@ public class DishVO implements Serializable {
     private LocalDateTime updateTime;
     //分类名称
     private String categoryName;
+    //口味数量，用于管理端列表展示
+    private Integer flavorCount;
+
     //菜品关联的口味
     @Builder.Default
     private List<DishFlavor> flavors = new ArrayList<>();

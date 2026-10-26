@@ -1,6 +1,5 @@
 package com.haiyun.meal.controller.admin;
 
-import com.haiyun.meal.constant.MessageConstant;
 import com.haiyun.meal.result.Result;
 import com.haiyun.meal.utils.AliOssUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.UUID;
 
 /**
@@ -44,9 +42,9 @@ public class CommonController {
             // 文件的请求路径
             String filePath = aliOssUtil.upload(file.getBytes(), objectName);
             return Result.success(filePath);
-        } catch (IOException e) {
-            log.error("文件上传失败：{}", e);
+        } catch (Exception e) {
+            log.error("文件上传失败：{}", e.getMessage());
+            return Result.error("文件上传失败，请检查 OSS 配置");
         }
-        return Result.error(MessageConstant.UPLOAD_FAILED);
     }
 }
