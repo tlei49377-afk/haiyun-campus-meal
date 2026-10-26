@@ -26,7 +26,6 @@ import java.util.Map;
 @RequestMapping("/api/app/user")
 @Slf4j
 public class UserController {
-
     @Autowired
     private UserService userService;
     @Autowired
@@ -59,14 +58,8 @@ public class UserController {
     private UserLoginVO buildLoginVO(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(JwtClaimsConstant.USER_ID, user.getId());
-        String token = JwtUtil.createJWT(jwtProperties.getUserSecretKey(),
-                jwtProperties.getUserTtl(), claims);
-        return UserLoginVO.builder()
-                .id(user.getId())
-                .openid(user.getOpenid())
-                .studentNo(user.getStudentNo())
-                .name(user.getName())
-                .token(token)
-                .build();
+        String token = JwtUtil.createJWT(jwtProperties.getUserSecretKey(), jwtProperties.getUserTtl(), claims);
+        return UserLoginVO.builder().id(user.getId()).openid(user.getOpenid())
+                .studentNo(user.getStudentNo()).name(user.getName()).token(token).build();
     }
 }

@@ -15,9 +15,6 @@ public interface UserService {
      * @return
      */
     User wxLogin(UserLoginDTO userLoginDTO);
-    /**
-     * 使用学号和密码登录学生账号。
-     */
     User studentLogin(UserLoginDTO userLoginDTO);
 
     /**
