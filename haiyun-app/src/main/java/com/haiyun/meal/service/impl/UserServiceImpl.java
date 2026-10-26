@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.haiyun.meal.constant.MessageConstant;
 import com.haiyun.meal.dto.UserLoginDTO;
+import com.haiyun.meal.dto.UserRegisterDTO;
 import com.haiyun.meal.entity.User;
+import com.haiyun.meal.exception.BaseException;
 import com.haiyun.meal.exception.LoginFailedException;
 import com.haiyun.meal.mapper.UserMapper;
 import com.haiyun.meal.properties.JwtProperties;
@@ -80,6 +82,35 @@ public class UserServiceImpl implements UserService {
         if (user == null || user.getPassword() == null || !passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new LoginFailedException(MessageConstant.LOGIN_FAILED);
         }
+        return user;
+    }
+
+    /**
+     * 注册学生账号，密码使用 BCrypt 存储。
+     */
+    public User studentRegister(UserRegisterDTO dto) {
+        if (!StringUtils.hasText(dto.getStudentNo()) || !StringUtils.hasText(dto.getName())
+                || !StringUtils.hasText(dto.getPassword())) {
+            throw new BaseException("学号、姓名和密码不能为空");
+        }
+        if (dto.getStudentNo().trim().length() < 6) {
+            throw new BaseException("学号格式不正确");
+        }
+        if (dto.getPassword().length() < 6) {
+            throw new BaseException("密码至少需要 6 位");
+        }
+        String studentNo = dto.getStudentNo().trim();
+        if (userMapper.getByStudentNo(studentNo) != null) {
+            throw new BaseException("该学号已注册");
+        }
+        User user = User.builder()
+                .studentNo(studentNo)
+                .password(passwordEncoder.encode(dto.getPassword()))
+                .name(dto.getName().trim())
+                .phone(StringUtils.hasText(dto.getPhone()) ? dto.getPhone().trim() : null)
+                .createTime(LocalDateTime.now())
+                .build();
+        userMapper.insert(user);
         return user;
     }
 
