@@ -10,6 +10,10 @@ const mode = ref<'student' | 'admin' | 'register'>('student')
 const studentNo = ref('20230001'); const password = ref('123456')
 const username = ref('admin'); const adminPassword = ref('123456'); const loading = ref(false)
 const registerStudentNo = ref(''); const registerName = ref(''); const registerPhone = ref(''); const registerPassword = ref(''); const registerConfirm = ref('')
+function switchMode(next: 'student' | 'admin' | 'register') {
+  mode.value = next
+  if (next === 'register') { registerPassword.value = ''; registerConfirm.value = '' }
+}
 async function submit() {
   loading.value = true
   try {
@@ -58,10 +62,10 @@ async function submit() {
 
       <section class="login-panel">
         <div class="login-panel-head"><span class="login-index">01</span><div><h2>账号登录</h2><p>学生与食堂运营人员使用各自入口</p></div></div>
-        <div class="login-tabs"><button :class="{ active: mode === 'student' }" @click="mode = 'student'">学生登录</button><button :class="{ active: mode === 'register' }" @click="mode = 'register'">学生注册</button><button :class="{ active: mode === 'admin' }" @click="mode = 'admin'">运营入口</button></div>
+        <div class="login-tabs"><button :class="{ active: mode === 'student' }" @click="switchMode('student')">学生登录</button><button :class="{ active: mode === 'register' }" @click="switchMode('register')">学生注册</button><button :class="{ active: mode === 'admin' }" @click="switchMode('admin')">运营入口</button></div>
         <el-form label-position="top" class="login-form" @submit.prevent="submit">
           <template v-if="mode === 'student'"><el-form-item label="学号"><el-input v-model="studentNo" size="large" placeholder="请输入学号" /></el-form-item><el-form-item label="密码"><el-input v-model="password" type="password" show-password size="large" placeholder="请输入密码" @keyup.enter="submit" /></el-form-item></template>
-          <template v-else-if="mode === 'register'"><el-form-item label="学号"><el-input v-model="registerStudentNo" size="large" placeholder="请输入学号" /></el-form-item><el-form-item label="姓名"><el-input v-model="registerName" size="large" placeholder="请输入姓名" /></el-form-item><el-form-item label="手机号（选填）"><el-input v-model="registerPhone" size="large" placeholder="请输入手机号" /></el-form-item><el-form-item label="密码"><el-input v-model="registerPassword" type="password" show-password size="large" placeholder="至少 6 位" /></el-form-item><el-form-item label="确认密码"><el-input v-model="registerConfirm" type="password" show-password size="large" placeholder="再次输入密码" @keyup.enter="submit" /></el-form-item></template>
+          <template v-else-if="mode === 'register'"><el-form-item label="学号"><el-input v-model="registerStudentNo" size="large" placeholder="请输入学号" /></el-form-item><el-form-item label="姓名"><el-input v-model="registerName" size="large" placeholder="请输入姓名" /></el-form-item><el-form-item label="手机号（选填）"><el-input v-model="registerPhone" size="large" placeholder="请输入手机号" /></el-form-item><el-form-item label="密码"><el-input v-model="registerPassword" name="register-password" autocomplete="new-password" type="password" size="large" placeholder="请设置至少 6 位密码" /></el-form-item><el-form-item label="确认密码"><el-input v-model="registerConfirm" name="register-confirm" autocomplete="new-password" type="password" size="large" placeholder="请再次输入密码" @keyup.enter="submit" /></el-form-item></template>
           <template v-else><el-form-item label="运营账号"><el-input v-model="username" size="large" placeholder="请输入运营账号" /></el-form-item><el-form-item label="密码"><el-input v-model="adminPassword" type="password" show-password size="large" placeholder="请输入密码" @keyup.enter="submit" /></el-form-item></template>
           <el-button type="primary" size="large" native-type="submit" :loading="loading" class="login-submit">{{ mode === 'register' ? '注册并进入' : '登录系统' }}</el-button>
         </el-form>
