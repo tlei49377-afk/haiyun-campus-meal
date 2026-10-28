@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * 权限点管理接口。
+ */
 @RestController
 @RequestMapping("/api/admin/permission")
 @Slf4j

@@ -9,6 +9,9 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * 学生用户实体。
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,6 +24,12 @@ public class User implements Serializable {
 
     //微信用户唯一标识
     private String openid;
+
+    //学号
+    private String studentNo;
+
+    //本地账号密码（BCrypt）
+    private String password;
 
     //姓名
     private String name;

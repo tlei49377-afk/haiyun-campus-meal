@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+/**
+ * 学生登录视图数据。
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,6 +18,8 @@ public class UserLoginVO implements Serializable {
 
     private Long id;
     private String openid;
+    private String studentNo;
+    private String name;
     private String token;
 
 }

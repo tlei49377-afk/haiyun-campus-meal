@@ -8,6 +8,9 @@ import com.haiyun.meal.vo.UserReportVO;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 
+/**
+ * 数据报表业务接口。
+ */
 public interface ReportService {
 
     /**

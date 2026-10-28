@@ -6,104 +6,78 @@ import com.haiyun.meal.vo.OrderPaymentVO;
 import com.haiyun.meal.vo.OrderStatisticsVO;
 import com.haiyun.meal.vo.OrderSubmitVO;
 import com.haiyun.meal.vo.OrderVO;
+import com.haiyun.meal.vo.PickupVerifyVO;
 
+/**
+ * 订单业务接口。
+ */
 public interface OrderService {
-
     /**
-     * 用户下单
-     * @param ordersSubmitDTO
-     * @return
+     * 提交预约取餐订单。
      */
-    OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO);
-
+    OrderSubmitVO submitOrder(OrdersSubmitDTO dto);
     /**
-     * 订单支付
-     * @param ordersPaymentDTO
-     * @return
+     * 完成模拟支付。
      */
-    OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) throws Exception;
-
+    OrderPaymentVO payment(OrdersPaymentDTO dto) throws Exception;
     /**
-     * 支付成功，修改订单状态
-     * @param outTradeNo
-     * @param transactionId
+     * 处理支付成功回调。
      */
     void paySuccess(String outTradeNo, String transactionId);
-
     /**
-     * 用户端订单分页查询
-     * @param page
-     * @param pageSize
-     * @param status
-     * @return
+     * 分页查询当前学生的历史订单。
      */
     PageResult pageQueryUser(int page, int pageSize, Integer status);
-
     /**
-     * 订单详情
-     * @param id
-     * @return
+     * 查询当前学生的订单详情。
      */
     OrderVO orderDetail(Long id);
-
     /**
-     * 用户取消订单
-     * @param id
+     * 查询管理端订单详情。
+     */
+    OrderVO orderDetailForAdmin(Long id);
+    /**
+     * 学生取消订单。
      */
     void userCancelById(Long id) throws Exception;
-
     /**
-     * 用户再来一单
-     * @param id
+     * 将历史订单商品重新加入购物车。
      */
     void repetition(Long id);
-
     /**
-     * 订单搜索
-     * @param ordersPageQueryDTO
-     * @return
+     * 按条件分页查询订单。
      */
-    PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO);
-
+    PageResult conditionSearch(OrdersPageQueryDTO dto);
     /**
-     * 统计订单数据
-     * @return
+     * 统计各处理状态的订单数量。
      */
     OrderStatisticsVO statistics();
-
     /**
-     * 接单
-     * @param orderConfirmDTO
+     * 确认接单。
      */
-    void confirm(OrdersConfirmDTO orderConfirmDTO);
-
+    void confirm(OrdersConfirmDTO dto);
     /**
-     * 拒单
-     * @param ordersRejectionDTO
+     * 拒绝订单。
      */
-    void rejection(OrdersRejectionDTO ordersRejectionDTO);
-
+    void rejection(OrdersRejectionDTO dto);
     /**
-     * 取消订单
-     * @param ordersCancelDTO
+     * 管理端取消订单。
      */
-    void cancel(OrdersCancelDTO ordersCancelDTO);
-
+    void cancel(OrdersCancelDTO dto);
     /**
-     * 派送订单
-     * @param id
+     * 将制作完成的订单标记为待取餐。
      */
-    void delivery(Long id);
-
+    void ready(Long id);
     /**
-     * 完成订单
-     * @param id
+     * 核销取餐码。
      */
-    void complete(Long id);
-
+    PickupVerifyVO verifyPickup(PickupVerifyDTO dto);
     /**
-     * 催单
-     * @param id
+     * 关闭超时订单并释放时段库存。
+     */
+    void cancelTimeout(Long id);
+    /**
+     * 发送取餐提醒。
      */
     void reminder(Long id);
 }

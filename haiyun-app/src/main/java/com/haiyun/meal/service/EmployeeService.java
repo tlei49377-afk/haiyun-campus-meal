@@ -6,6 +6,9 @@ import com.haiyun.meal.dto.EmployeePageQueryDTO;
 import com.haiyun.meal.entity.Employee;
 import com.haiyun.meal.result.PageResult;
 
+/**
+ * 员工业务接口。
+ */
 public interface EmployeeService {
 
     /**

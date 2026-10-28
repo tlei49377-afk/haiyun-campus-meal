@@ -8,6 +8,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * JWT工具类。
+ */
 public class JwtUtil {
     /**
      * 生成jwt

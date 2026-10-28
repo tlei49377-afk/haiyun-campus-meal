@@ -41,7 +41,8 @@
     </update>
 
     <select id="pageQuery" resultType="com.haiyun.meal.vo.SetmealVO">
-        select s.*, c.name as categoryName
+        select s.*, c.name as categoryName,
+               (select count(*) from setmeal_dish sd where sd.setmeal_id = s.id) as dish_count
         from setmeal s left join category c on s.category_id = c.id
         <where>
             <if test="name != null and name != ''">

@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.haiyun.meal.constant.MessageConstant;
 import com.haiyun.meal.dto.UserLoginDTO;
+import com.haiyun.meal.dto.UserRegisterDTO;
 import com.haiyun.meal.entity.User;
+import com.haiyun.meal.exception.BaseException;
 import com.haiyun.meal.exception.LoginFailedException;
 import com.haiyun.meal.mapper.UserMapper;
 import com.haiyun.meal.properties.JwtProperties;
@@ -14,11 +16,16 @@ import com.haiyun.meal.utils.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 学生用户业务实现。
+ */
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService {
@@ -31,6 +38,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     /**
      * 微信登录
      * @param userLoginDTO
@@ -58,6 +68,49 @@ public class UserServiceImpl implements UserService {
         }
 
         // 返回用户对象
+        return user;
+    }
+
+    /**
+     * 学生本地登录，便于没有微信开发者账号时演示 H5 全链路。
+     */
+    public User studentLogin(UserLoginDTO dto) {
+        if (!StringUtils.hasText(dto.getStudentNo()) || !StringUtils.hasText(dto.getPassword())) {
+            throw new LoginFailedException(MessageConstant.LOGIN_FAILED);
+        }
+        User user = userMapper.getByStudentNo(dto.getStudentNo().trim());
+        if (user == null || user.getPassword() == null || !passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            throw new LoginFailedException(MessageConstant.LOGIN_FAILED);
+        }
+        return user;
+    }
+
+    /**
+     * 注册学生账号，密码使用 BCrypt 存储。
+     */
+    public User studentRegister(UserRegisterDTO dto) {
+        if (!StringUtils.hasText(dto.getStudentNo()) || !StringUtils.hasText(dto.getName())
+                || !StringUtils.hasText(dto.getPassword())) {
+            throw new BaseException("学号、姓名和密码不能为空");
+        }
+        if (dto.getStudentNo().trim().length() < 6) {
+            throw new BaseException("学号格式不正确");
+        }
+        if (dto.getPassword().length() < 6) {
+            throw new BaseException("密码至少需要 6 位");
+        }
+        String studentNo = dto.getStudentNo().trim();
+        if (userMapper.getByStudentNo(studentNo) != null) {
+            throw new BaseException("该学号已注册");
+        }
+        User user = User.builder()
+                .studentNo(studentNo)
+                .password(passwordEncoder.encode(dto.getPassword()))
+                .name(dto.getName().trim())
+                .phone(StringUtils.hasText(dto.getPhone()) ? dto.getPhone().trim() : null)
+                .createTime(LocalDateTime.now())
+                .build();
+        userMapper.insert(user);
         return user;
     }
 

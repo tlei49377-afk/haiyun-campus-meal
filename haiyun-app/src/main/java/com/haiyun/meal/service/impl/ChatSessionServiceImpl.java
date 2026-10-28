@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * AI 会话业务实现。
+ */
 @Service
 @Slf4j
 public class ChatSessionServiceImpl implements ChatSessionService {
@@ -52,6 +55,9 @@ public class ChatSessionServiceImpl implements ChatSessionService {
 
     private static final String DEFAULT_TITLE = "新会话";
 
+    /**
+     * 登记会话并刷新最后活跃时间。
+     */
     @Override
     public void touch(Long empId, String memoryId, String message) {
         if (empId == null || !StringUtils.hasText(memoryId)) {
@@ -82,6 +88,9 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         }
     }
 
+    /**
+     * 生成新的会话 ID。
+     */
     @Override
     public String createSession() {
         // 只生成 id，不在这里登记。
@@ -90,6 +99,9 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         return "web_" + UUID.randomUUID().toString().replace("-", "");
     }
 
+    /**
+     * 查询当前管理员的会话列表。
+     */
     @Override
     public List<ChatSessionVO> listSessions(Long empId) {
         if (empId == null) {
@@ -118,6 +130,9 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         return result;
     }
 
+    /**
+     * 查询会话中的用户消息和 AI 回复。
+     */
     @Override
     public List<ChatMessageVO> getSessionMessages(Long empId, String memoryId) {
         requireOwned(empId, memoryId);
@@ -144,6 +159,9 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         return result;
     }
 
+    /**
+     * 删除会话及其历史消息。
+     */
     @Override
     public void deleteSession(Long empId, String memoryId) {
         requireOwned(empId, memoryId);
@@ -223,10 +241,16 @@ public class ChatSessionServiceImpl implements ChatSessionService {
         return sb.toString();
     }
 
+    /**
+     * 生成管理员会话集合的 Redis 键。
+     */
     private String sessionKey(Long empId) {
         return SESSION_KEY_PREFIX + empId;
     }
 
+    /**
+     * 生成会话标题的 Redis 键。
+     */
     private String titleKey(String memoryId) {
         return TITLE_KEY_PREFIX + memoryId;
     }

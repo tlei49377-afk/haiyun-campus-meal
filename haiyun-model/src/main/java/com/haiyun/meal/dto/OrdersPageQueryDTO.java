@@ -6,6 +6,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+/**
+ * 订单分页查询条件。
+ */
 @Data
 public class OrdersPageQueryDTO implements Serializable {
 
@@ -14,8 +17,6 @@ public class OrdersPageQueryDTO implements Serializable {
     private int pageSize;
 
     private String number;
-
-    private  String phone;
 
     private Integer status;
 
@@ -26,5 +27,6 @@ public class OrdersPageQueryDTO implements Serializable {
     private LocalDateTime endTime;
 
     private Long userId;
+    private Long stallId;
 
 }

@@ -3,7 +3,7 @@
 -- 同一笔交易的重复通知会因唯一键冲突被忽略
 -- ============================================================
 
-USE sky_take_out;
+USE haiyun_meal;
 
 CREATE TABLE IF NOT EXISTS payment_callback_log (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,

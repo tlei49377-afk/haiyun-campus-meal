@@ -130,6 +130,9 @@ public class DishTools {
         return null;
     }
 
+    /**
+     * 转换状态文本。
+     */
     private String toStatusText(Integer status) {
         if (status == null) {
             return "未知";
@@ -139,6 +142,9 @@ public class DishTools {
 
 
 
+    /**
+     * 删除指定菜品。
+     */
     @Tool("删除菜品。用户要求删除某道菜时调用。"
             + "注意：只有「停售」且「未被套餐关联」的菜才能删除；执行前请先向用户确认。")
     public String deleteDish(@P("要删除的菜品名称，支持模糊匹配。") String dishName){
@@ -412,6 +418,9 @@ public class DishTools {
         }
     }
 
+    /**
+     * 判断字符串是否非空白。
+     */
     private boolean isNotBlank(String text) {
         return text != null && !text.trim().isEmpty();
     }

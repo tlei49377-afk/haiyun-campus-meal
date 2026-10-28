@@ -3,7 +3,7 @@
 -- 权限点命名统一为「模块:操作」，如 dish:add
 -- ============================================================
 
-USE sky_take_out;
+USE haiyun_meal;
 
 CREATE TABLE role (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,

@@ -16,7 +16,8 @@
         </foreach>
     </delete>
     <select id="pageQuery" resultType="com.haiyun.meal.vo.DishVO">
-        select d.*, c.name as categoryName
+        select d.*, c.name as categoryName,
+               (select count(*) from dish_flavor df where df.dish_id = d.id) as flavor_count
         from dish d left join category c on d.category_id = c.id
         <where>
             <if test="name != null and name != ''">

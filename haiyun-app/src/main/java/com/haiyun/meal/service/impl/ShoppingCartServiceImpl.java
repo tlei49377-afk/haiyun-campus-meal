@@ -2,9 +2,11 @@ package com.haiyun.meal.service.impl;
 
 import com.haiyun.meal.context.BaseContext;
 import com.haiyun.meal.dto.ShoppingCartDTO;
+import com.haiyun.meal.entity.Category;
 import com.haiyun.meal.entity.Dish;
 import com.haiyun.meal.entity.Setmeal;
 import com.haiyun.meal.entity.ShoppingCart;
+import com.haiyun.meal.mapper.CategoryMapper;
 import com.haiyun.meal.mapper.DishMapper;
 import com.haiyun.meal.mapper.SetmealMapper;
 import com.haiyun.meal.mapper.ShoppingCartMapper;
@@ -17,6 +19,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 购物车业务实现。
+ */
 @Service
 @Slf4j
 public class ShoppingCartServiceImpl implements ShoppingCartService {
@@ -27,6 +32,8 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private DishMapper dishMapper;
     @Autowired
     private SetmealMapper setmealMapper;
+    @Autowired
+    private CategoryMapper categoryMapper;
 
     /**
      * 添加购物车
@@ -58,6 +65,11 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 shoppingCart.setName(dish.getName());
                 shoppingCart.setImage(dish.getImage());
                 shoppingCart.setAmount(dish.getPrice());
+                Category category = categoryMapper.getById(dish.getCategoryId());
+                if (category == null || category.getStallId() == null) {
+                    throw new RuntimeException("菜品未绑定档口");
+                }
+                shoppingCart.setStallId(category.getStallId());
             }
             else {
                 // 添加的是套餐
@@ -67,6 +79,11 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 shoppingCart.setName(setmeal.getName());
                 shoppingCart.setImage(setmeal.getImage());
                 shoppingCart.setAmount(setmeal.getPrice());
+                Category category = categoryMapper.getById(setmeal.getCategoryId());
+                if (category == null || category.getStallId() == null) {
+                    throw new RuntimeException("套餐未绑定档口");
+                }
+                shoppingCart.setStallId(category.getStallId());
             }
             shoppingCart.setNumber(1);
             shoppingCart.setCreateTime(LocalDateTime.now());

@@ -4,7 +4,7 @@
 -- 脚本可重复执行：已存在的索引会被跳过
 -- ============================================================
 
-USE sky_take_out;
+USE haiyun_meal;
 
 DROP PROCEDURE IF EXISTS sky_add_index;
 
@@ -52,8 +52,5 @@ CALL sky_add_index('employee_role', 'idx_role_id', 'role_id');
 
 -- shopping_cart：购物车按 user_id 查 / 清空
 CALL sky_add_index('shopping_cart', 'idx_user_id', 'user_id');
-
--- address_book：地址簿按 user_id 查
-CALL sky_add_index('address_book', 'idx_user_id', 'user_id');
 
 DROP PROCEDURE sky_add_index;

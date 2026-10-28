@@ -8,6 +8,9 @@ import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
+/**
+ * 购物车数据访问接口。
+ */
 @Mapper
 public interface ShoppingCartMapper {
 
@@ -29,8 +32,8 @@ public interface ShoppingCartMapper {
      * 插入购物车数据
      * @param shoppingCart
      */
-    @Insert("insert into shopping_cart (name, user_id, dish_id, setmeal_id, dish_flavor, number, amount, image, create_time) " +
-            "values (#{name}, #{userId}, #{dishId}, #{setmealId}, #{dishFlavor}, #{number}, #{amount}, #{image}, #{createTime})")
+    @Insert("insert into shopping_cart (name, user_id, stall_id, dish_id, setmeal_id, dish_flavor, number, amount, image, create_time) " +
+            "values (#{name}, #{userId}, #{stallId}, #{dishId}, #{setmealId}, #{dishFlavor}, #{number}, #{amount}, #{image}, #{createTime})")
     void insert(ShoppingCart shoppingCart);
 
     /**

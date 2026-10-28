@@ -14,6 +14,9 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.boot.test.context.SpringBootTest;
 
 //@SpringBootTest
+/**
+ * HTTP 客户端测试。
+ */
 @Disabled("手动调试用：需要本地先启动 8080 的服务，默认不参与 mvn test")
 public class HttpClientTest {
 
@@ -26,7 +29,7 @@ public class HttpClientTest {
         CloseableHttpClient httpClient = HttpClients.createDefault();
 
         // 创建get方式请求对象
-        HttpGet httpGet = new HttpGet("http://localhost:8080/user/shop/status");
+        HttpGet httpGet = new HttpGet("http://localhost:8080/api/app/shop/status");
 
         // 发送请求
         CloseableHttpResponse response = httpClient.execute(httpGet);
@@ -53,7 +56,7 @@ public class HttpClientTest {
         CloseableHttpClient httpClient = HttpClients.createDefault();
 
         // 创建post方式请求对象
-        HttpPost httpPost = new HttpPost("http://localhost:8080/admin/employee/login");
+        HttpPost httpPost = new HttpPost("http://localhost:8080/api/admin/employee/login");
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("username","admin");

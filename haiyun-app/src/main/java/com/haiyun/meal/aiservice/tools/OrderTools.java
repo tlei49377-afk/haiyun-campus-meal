@@ -32,17 +32,22 @@ public class OrderTools {
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    @Tool("查询订单信息。可以根据订单号、下单人手机号、订单状态、下单时间范围查询订单列表，"
-            + "返回订单号、下单时间、订单状态、订单金额、下单人等信息。"
+    /**
+     * 获取当前日期字符串。
+     */
+    @Tool("获取系统当前日期，返回格式 yyyy-MM-dd。用户询问今天、明天、本周、最近等相对日期时，必须先调用此工具，禁止猜测日期。")
+    public String currentDate() {
+        return LocalDate.now().toString();
+    }
+
+    @Tool("查询订单信息。可以根据订单号、订单状态、下单时间范围查询订单列表，"
+            + "返回订单号、取餐码、下单时间、订单状态、订单金额、下单人等信息。"
             + "当用户询问订单、某笔订单的状态、某人的订单时，调用此工具。")
     public String queryOrder(
             @P(value = "订单号，精确匹配。用户没有提供订单号时传空字符串", required = false)
             String orderNo,
 
-            @P(value = "下单人的手机号，精确匹配。用户没有提供手机号时传空字符串", required = false)
-            String phone,
-
-            @P(value = "订单状态：1 待付款，2 待接单，3 已接单，4 派送中，5 已完成，6 已取消，7 退款。用户没有指定状态时传 -1", required = false)
+            @P(value = "订单状态：10 待支付，20 待接单，30 制作中，40 待取餐，50 已取餐，60 已取消，70 已退款。用户没有指定状态时传 -1", required = false)
             Integer status,
 
             @P(value = "下单开始时间，格式 yyyy-MM-dd HH:mm:ss，也可以只给日期 yyyy-MM-dd。没有则传空字符串", required = false)
@@ -51,8 +56,8 @@ public class OrderTools {
             @P(value = "下单结束时间，格式 yyyy-MM-dd HH:mm:ss，也可以只给日期 yyyy-MM-dd。没有则传空字符串", required = false)
             String endTime) {
 
-        log.info("AI 工具调用 -> queryOrder(orderNo={}, phone={}, status={}, beginTime={}, endTime={})",
-                orderNo, phone, status, beginTime, endTime);
+        log.info("AI 工具调用 -> queryOrder(orderNo={}, status={}, beginTime={}, endTime={})",
+                orderNo, status, beginTime, endTime);
 
         try {
             OrdersPageQueryDTO dto = new OrdersPageQueryDTO();
@@ -61,9 +66,6 @@ public class OrderTools {
 
             if (isNotBlank(orderNo)) {
                 dto.setNumber(orderNo.trim());
-            }
-            if (isNotBlank(phone)) {
-                dto.setPhone(phone.trim());
             }
             if (status != null && status != -1) {
                 dto.setStatus(status);
@@ -96,8 +98,8 @@ public class OrderTools {
                   .append(" | 下单时间：").append(formatTime(order.getOrderTime()))
                   .append(" | 状态：").append(toStatusText(order.getStatus()))
                   .append(" | 金额：").append(order.getAmount()).append(" 元")
-                  .append(" | 下单人：").append(order.getConsignee() == null ? "未知" : order.getConsignee())
-                  .append(" | 手机号：").append(order.getPhone() == null ? "未知" : order.getPhone())
+                  .append(" | 取餐码：").append(order.getPickupCode() == null ? "未知" : order.getPickupCode())
+                  .append(" | 下单人：").append(order.getUserName() == null ? "未知" : order.getUserName())
                   .append("\n");
             }
             return sb.toString();
@@ -121,26 +123,35 @@ public class OrderTools {
         return LocalDateTime.parse(value, DATE_TIME_FORMATTER);
     }
 
+    /**
+     * 格式化时间。
+     */
     private String formatTime(LocalDateTime time) {
         return time == null ? "未知" : time.format(DATE_TIME_FORMATTER);
     }
 
+    /**
+     * 转换状态文本。
+     */
     private String toStatusText(Integer status) {
         if (status == null) {
             return "未知";
         }
         switch (status) {
-            case 1: return "待付款";
-            case 2: return "待接单";
-            case 3: return "已接单";
-            case 4: return "派送中";
-            case 5: return "已完成";
-            case 6: return "已取消";
-            case 7: return "退款";
+            case 10: return "待支付";
+            case 20: return "待接单";
+            case 30: return "制作中";
+            case 40: return "待取餐";
+            case 50: return "已取餐";
+            case 60: return "已取消";
+            case 70: return "已退款";
             default: return "未知(" + status + ")";
         }
     }
 
+    /**
+     * 判断字符串是否非空白。
+     */
     private boolean isNotBlank(String text) {
         return text != null && !text.trim().isEmpty();
     }

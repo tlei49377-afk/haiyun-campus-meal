@@ -14,6 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 // traceId 过滤器的单元测试
+/**
+ * 链路追踪过滤器测试。
+ */
 class TraceIdFilterTest {
 
     private final TraceIdFilter filter = new TraceIdFilter();

@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * 菜品分类分页查询条件。
+ */
 @Data
 public class CategoryPageQueryDTO implements Serializable {
 

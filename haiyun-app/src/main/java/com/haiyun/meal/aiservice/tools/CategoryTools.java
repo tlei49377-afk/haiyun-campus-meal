@@ -57,6 +57,9 @@ public class CategoryTools {
         }
     }
 
+    /**
+     * 转换分类类型文本。
+     */
     private String toTypeText(Integer type) {
         if (type == null) {
             return "未知";

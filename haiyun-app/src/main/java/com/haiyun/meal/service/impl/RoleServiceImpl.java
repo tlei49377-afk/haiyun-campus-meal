@@ -19,6 +19,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 角色业务实现。
+ */
 @Service
 @Slf4j
 public class RoleServiceImpl implements RoleService {
@@ -156,6 +159,9 @@ public class RoleServiceImpl implements RoleService {
     }
 
     // 比较角色集合是否一致，忽略顺序
+    /**
+     * 比较两个角色 ID 集合是否一致。
+     */
     private boolean sameRoleIds(List<Long> currentIds, List<Long> roleIds) {
         Set<Long> current = new HashSet<>(currentIds);
         Set<Long> target = roleIds == null ? new HashSet<>() : new HashSet<>(roleIds);

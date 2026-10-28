@@ -3,6 +3,9 @@ package com.haiyun.meal.dto;
 import lombok.Data;
 import java.io.Serializable;
 
+/**
+ * 订单支付请求数据。
+ */
 @Data
 public class OrdersPaymentDTO implements Serializable {
     //订单号

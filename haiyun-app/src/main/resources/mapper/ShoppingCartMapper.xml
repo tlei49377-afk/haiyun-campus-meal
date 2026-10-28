@@ -4,10 +4,10 @@
 <mapper namespace="com.haiyun.meal.mapper.ShoppingCartMapper">
     <insert id="insertBatch" parameterType="list">
         insert into shopping_cart
-        (name, image, user_id, dish_id, setmeal_id, dish_flavor, number, amount, create_time)
+        (name, image, user_id, stall_id, dish_id, setmeal_id, dish_flavor, number, amount, create_time)
         values
         <foreach collection="shoppingCartList" item="sc" separator=",">
-            (#{sc.name},#{sc.image},#{sc.userId},#{sc.dishId},#{sc.setmealId},#{sc.dishFlavor},#{sc.number},#{sc.amount},#{sc.createTime})
+            (#{sc.name},#{sc.image},#{sc.userId},#{sc.stallId},#{sc.dishId},#{sc.setmealId},#{sc.dishFlavor},#{sc.number},#{sc.amount},#{sc.createTime})
         </foreach>
     </insert>
 
@@ -22,6 +22,9 @@
             </if>
             <if test="setmealId != null">
                 and setmeal_id = #{setmealId}
+            </if>
+            <if test="stallId != null">
+                and stall_id = #{stallId}
             </if>
             <if test="dishFlavor != null">
                 and dish_flavor = #{dishFlavor}

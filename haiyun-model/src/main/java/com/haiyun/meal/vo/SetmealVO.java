@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 套餐视图数据。
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -42,6 +45,9 @@ public class SetmealVO implements Serializable {
 
     //分类名称
     private String categoryName;
+
+    //包含菜品数量
+    private Integer dishCount;
 
     //套餐和菜品的关联关系
     @Builder.Default

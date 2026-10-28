@@ -133,28 +133,13 @@
             <artifactId>langchain4j-reactor</artifactId>
             <version>1.0.1-beta6</version>
         </dependency>
-        <!--rag-easy依赖-->
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-easy-rag</artifactId>
-            <version>1.0.1-beta6</version>
-        </dependency>
-
-        <!--pdf解析器依赖-->
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-document-parser-apache-pdfbox</artifactId>
-            <version>1.0.1-beta6</version>
-        </dependency>
-        <!--引入Langchain4j对于redis向量数据库的依赖-->
-        <dependency>
-            <groupId>dev.langchain4j</groupId>
-            <artifactId>langchain4j-community-redis-spring-boot-starter</artifactId>
-            <version>1.0.1-beta6</version>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

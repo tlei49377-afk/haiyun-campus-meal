@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.List;
 
+/**
+ * 权限业务实现。
+ */
 @Service
 @Slf4j
 public class PermissionServiceImpl implements PermissionService {
@@ -36,15 +39,23 @@ public class PermissionServiceImpl implements PermissionService {
     public List<String> listCodesByEmployeeId(Long employeeId) {
         String key = CACHE_KEY_PREFIX + employeeId;
 
-        String json = redisTemplate.opsForValue().get(key);
-        if (json != null) {
-            return JSON.parseArray(json, String.class);
+        try {
+            String json = redisTemplate.opsForValue().get(key);
+            if (json != null) {
+                return JSON.parseArray(json, String.class);
+            }
+        } catch (Exception e) {
+            log.warn("权限缓存不可用，回退数据库：{}", e.getMessage());
         }
 
         log.info("权限缓存未命中，查询数据库：employeeId={}", employeeId);
         List<String> codes = permissionMapper.listCodesByEmployeeId(employeeId);
-        // 查不到也缓存空列表，防止每次请求都打库
-        redisTemplate.opsForValue().set(key, JSON.toJSONString(codes), CACHE_TTL);
+        try {
+            // 查不到也缓存空列表，防止每次请求都打库
+            redisTemplate.opsForValue().set(key, JSON.toJSONString(codes), CACHE_TTL);
+        } catch (Exception e) {
+            log.warn("权限缓存写入失败，本次直接使用数据库结果：{}", e.getMessage());
+        }
         return codes;
     }
 
@@ -53,7 +64,11 @@ public class PermissionServiceImpl implements PermissionService {
      * @param employeeId
      */
     public void evictCache(Long employeeId) {
-        redisTemplate.delete(CACHE_KEY_PREFIX + employeeId);
+        try {
+            redisTemplate.delete(CACHE_KEY_PREFIX + employeeId);
+        } catch (Exception e) {
+            log.warn("权限缓存删除失败：employeeId={}, reason={}", employeeId, e.getMessage());
+        }
     }
 
     /**

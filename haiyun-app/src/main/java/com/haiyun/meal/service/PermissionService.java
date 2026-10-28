@@ -4,6 +4,9 @@ import com.haiyun.meal.entity.Permission;
 
 import java.util.List;
 
+/**
+ * 权限业务接口。
+ */
 public interface PermissionService {
 
     /**

@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+/**
+ * 菜品分类实体。
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,6 +19,9 @@ public class Category implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long id;
+
+    //所属档口
+    private Long stallId;
 
     //类型: 1菜品分类 2套餐分类
     private Integer type;

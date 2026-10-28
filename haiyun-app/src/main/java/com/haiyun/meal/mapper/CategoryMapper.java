@@ -8,8 +8,12 @@ import com.haiyun.meal.entity.Category;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
+/**
+ * 菜品分类数据访问接口。
+ */
 @Mapper
 public interface CategoryMapper {
 
@@ -17,9 +21,9 @@ public interface CategoryMapper {
      * 插入数据
      * @param category
      */
-    @Insert("insert into category(type, name, sort, status, create_time, update_time, create_user, update_user)" +
+    @Insert("insert into category(stall_id, type, name, sort, status, create_time, update_time, create_user, update_user)" +
             " VALUES" +
-            " (#{type}, #{name}, #{sort}, #{status}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})")
+            " (#{stallId}, #{type}, #{name}, #{sort}, #{status}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})")
     @AutoFill(value = OperationType.INSERT)
     void insert(Category category);
 
@@ -43,6 +47,18 @@ public interface CategoryMapper {
      */
     @AutoFill(value = OperationType.UPDATE)
     void update(Category category);
+
+    /**
+     * 根据主键查询菜品分类。
+     */
+    @Select("select * from category where id = #{id}")
+    Category getById(Long id);
+
+    /**
+     * 查询档口下启用的菜品分类。
+     */
+    @Select("select * from category where stall_id = #{stallId} and status = 1 order by sort asc, id asc")
+    List<Category> listByStall(Long stallId);
 
     /**
      * 根据类型查询分类

@@ -19,6 +19,9 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 工作台业务实现。
+ */
 @Service
 @Slf4j
 public class WorkspaceServiceImpl implements WorkspaceService {
@@ -98,9 +101,9 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         //待接单
         Integer waitingOrders = orderMapper.countByMap(map);
 
-        //待派送
-        map.put("status", Orders.CONFIRMED);
-        Integer deliveredOrders = orderMapper.countByMap(map);
+        //制作中
+        map.put("status", Orders.MAKING);
+        Integer makingOrders = orderMapper.countByMap(map);
 
         //已完成
         map.put("status", Orders.COMPLETED);
@@ -116,7 +119,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
         return OrderOverViewVO.builder()
                 .waitingOrders(waitingOrders)
-                .deliveredOrders(deliveredOrders)
+                .makingOrders(makingOrders)
                 .completedOrders(completedOrders)
                 .cancelledOrders(cancelledOrders)
                 .allOrders(allOrders)

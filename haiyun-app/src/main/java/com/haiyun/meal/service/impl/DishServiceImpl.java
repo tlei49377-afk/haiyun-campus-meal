@@ -27,6 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 菜品业务实现。
+ */
 @Service
 @Slf4j
 public class DishServiceImpl implements DishService {
