@@ -126,8 +126,8 @@ haiyun-meal/
 ### 1. 克隆项目
 
 ```powershell
-git clone --branch rebuild/b-weekly https://github.com/tlei49377-afk/sky-take-out.git
-cd sky-take-out
+git clone --branch master https://github.com/tlei49377-afk/haiyun-campus-meal.git
+cd haiyun-campus-meal
 ```
 
 后续命令均在项目根目录执行。
